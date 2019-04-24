@@ -125,7 +125,7 @@
 
                 // Load a glTF resource
                 loader.load(
-                    'models/ar-testgltf.gltf',
+                    'models/Accenture-AR.gltf',
                     function(group) {
                         mesh0 = group.scene
                         mesh0.scale.set(0.1, 0.1, 0.1)
@@ -170,12 +170,12 @@
                 sphere3 = new THREE.Mesh(sphereLightsGeometry, sphere3Material)
 
                 // add objects to scene
-                markerRoot1.add(cube)
-                markerRoot1.add(cylinder)
-                markerRoot1.add(mars)
-                markerRoot1.add(sphere1)
-                markerRoot1.add(sphere2)
-                markerRoot1.add(sphere3)
+                // markerRoot1.add(cube)
+                // markerRoot1.add(cylinder)
+                // markerRoot1.add(mars)
+                // markerRoot1.add(sphere1)
+                // markerRoot1.add(sphere2)
+                // markerRoot1.add(sphere3)
 
                 // set starting position of objects
                 cube.position.x = -2
@@ -205,13 +205,13 @@
 
             // game logic
             function update() {
-                cube.rotation.x += 0.01
-                cube.rotation.y += 0.005
-                cylinder.rotation.z += 0.01
-                cylinder.rotation.x += 0.005
-                cylinder.rotation.y += 0.003
-                mars.rotation.y += 0.02
-                mars.rotation.z += 0.02
+                // cube.rotation.x += 0.01
+                // cube.rotation.y += 0.005
+                // cylinder.rotation.z += 0.01
+                // cylinder.rotation.x += 0.005
+                // cylinder.rotation.y += 0.003
+                // mars.rotation.y += 0.02
+                // mars.rotation.z += 0.02
 
                 var time = Date.now() * 0.0005
 
@@ -219,23 +219,23 @@
                 pointLight1.position.x = Math.sin(time * 0.7) * 3
                 pointLight1.position.y = Math.cos(time * 0.5) * 4
                 pointLight1.position.z = Math.cos(time * 0.3) * 3
-                sphere1.position.x = Math.sin(time * 0.7) * 3
-                sphere1.position.y = Math.cos(time * 0.5) * 4
-                sphere1.position.z = Math.cos(time * 0.3) * 3
+                // sphere1.position.x = Math.sin(time * 0.7) * 3
+                // sphere1.position.y = Math.cos(time * 0.5) * 4
+                // sphere1.position.z = Math.cos(time * 0.3) * 3
 
                 pointLight2.position.x = Math.cos(time * 0.3) * 3
                 pointLight2.position.y = Math.sin(time * 0.5) * 4
                 pointLight2.position.z = Math.sin(time * 0.7) * 3
-                sphere2.position.x = Math.cos(time * 0.3) * 3
-                sphere2.position.y = Math.sin(time * 0.5) * 4
-                sphere2.position.z = Math.sin(time * 0.7) * 3
+                // sphere2.position.x = Math.cos(time * 0.3) * 3
+                // sphere2.position.y = Math.sin(time * 0.5) * 4
+                // sphere2.position.z = Math.sin(time * 0.7) * 3
 
                 pointLight3.position.x = Math.sin(time * 0.7) * 3
                 pointLight3.position.y = Math.cos(time * 0.3) * 4
                 pointLight3.position.z = Math.sin(time * 0.5) * 3
-                sphere3.position.x = Math.sin(time * 0.7) * 3
-                sphere3.position.y = Math.cos(time * 0.3) * 4
-                sphere3.position.z = Math.sin(time * 0.5) * 3
+                // sphere3.position.x = Math.sin(time * 0.7) * 3
+                // sphere3.position.y = Math.cos(time * 0.3) * 4
+                // sphere3.position.z = Math.sin(time * 0.5) * 3
                 // update artoolkit on every frame
                 if (arToolkitSource.ready !== false)
                     arToolkitContext.update(arToolkitSource.domElement)
