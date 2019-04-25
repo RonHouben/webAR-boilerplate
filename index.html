@@ -29,31 +29,24 @@
             var scene, camera, renderer, clock, deltaTime, totalTime
             var arToolkitSource, arToolkitContext
             var markerRoot1
-            var mesh1
-
-            // objects
-            var cube, cylinder, mars
-            var sphere1, sphere2, sphere3
-
-            // lights
-            var ambientLight, directionalLight, spotLight, pointLight1, pointLight2, pointLight3
+            var material1, mesh1
+            var light
 
             initialize()
             animate()
 
             function initialize() {
                 scene = new THREE.Scene()
-                camera = new THREE.PerspectiveCamera(75, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 1000)
-                // var camera = new THREE.Camera()
+
+                camera = new THREE.Camera()
+                scene.add(camera)
+
                 renderer = new THREE.WebGLRenderer({
                     antialias: true,
                     alpha: true
                 })
-
-                // set renderer
-                // renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+                renderer.setClearColor(new THREE.Color('lightgrey'), 0)
                 renderer.setSize(WINDOW_WIDTH, WINDOW_HEIGHT)
-                // add the renderer to the page
                 document.body.appendChild(renderer.domElement)
 
                 clock = new THREE.Clock()
@@ -102,141 +95,76 @@
                 // setup markerRoots
                 ////////////////////////////////////////////////////////////
                 // build markerControls
-                markerRoot1 = new THREE.Group();
-                scene.add(markerRoot1);
+                markerRoot1 = new THREE.Group()
+                scene.add(markerRoot1)
                 let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
                     type: 'pattern', patternUrl: "data/hiro.patt",
                 })
 
-                let geometry1 = new THREE.PlaneBufferGeometry(1, 1, 4, 4)
-                let material1 = new THREE.MeshBasicMaterial({
-                    transparent: true,
-                    opacity: 0,
-                    side: THREE.DoubleSide
-                })
-                mesh1 = new THREE.Mesh(geometry1, material1)
-                mesh1.position.set(0, 0, 0)
-                markerRoot1.add(mesh1)
+                ////////////////////////////////////////////////////////////
+                // setup scene
+                ////////////////////////////////////////////////////////////
+                renderer.shadowMap.enabled = true
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
+                var loader = new THREE.GLTFLoader()
+
+                let sceneGroup = new THREE.Group()
+                markerRoot1.add(sceneGroup)
+
+                // add floor for shadows
+                let floorGeometry = new THREE.PlaneGeometry(20, 20)
+                let floorMaterial = new THREE.ShadowMaterial()
+                floorMaterial.opacity = 0.3
+                let floorMesh = new THREE.Mesh(floorGeometry, floorMaterial)
+                floorMesh.rotation.x = -Math.PI / 2
+                floorMesh.receiveShadow = true
+                sceneGroup.add(floorMesh)
 
                 function onProgress(xhr) { console.log((xhr.loaded / xhr.total * 100) + '% loaded') }
                 function onError(xhr) { console.log('An error happened') }
-                // create loader for GLTF
-                var loader = new THREE.GLTFLoader()
 
                 // Load a glTF resource
                 loader.load(
-                    'models/Accenture-AR.gltf',
+                    '/models/accenture-ar.gltf',
                     function(group) {
-                        mesh0 = group.scene
-                        mesh0.scale.set(0.1, 0.1, 0.1)
-                        markerRoot1.add(mesh0)
-                        // return children.forEach(child => child.name === 'Plane' ? gltf.scene.remove(child) : null)
+                        logo = group.scene
+                        logo.scale.set(0.2, 0.2, 0.2)
+                        logo.castShadow = true
+                        sceneGroup.add(logo)
                     },
                     onProgress,
                     onError
                 )
 
-                // create the shapes
-                var cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
-                var cylinderGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 32, 1)
-                var sphereLightsGeometry = new THREE.SphereGeometry(0.2, 32, 32)
-                var marsGeometry = new THREE.SphereGeometry(1, 32, 32)
-
-                // create materials
-                var cubeMaterials = [
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide }), // RIGHT SIDE
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide }), // LEFT SIDE
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide }), // TOP SIDE
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide }), // BOTTOM SIDE
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide }), // FRONT SIDE
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cube-texture.png'), side: THREE.DoubleSide })  // BACK SIDE
-                ]
-                var cylinderMaterials = [
-                    // new THREE.MeshPhongMaterial({ color: 0xFFFFFF, wireframe: true }), // SIDES
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cylinder-texture.jpg'), side: THREE.FrontSide, wireframe: true }), // SIDES
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cylinder-texture.jpg'), side: THREE.DoubleSide }), // TOP
-                    new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/cylinder-texture.jpg'), side: THREE.DoubleSide }), // BOTTOM
-                ]
-                var sphere1Material = new THREE.MeshPhongMaterial({ color: 0xFF0000 })
-                var sphere2Material = new THREE.MeshPhongMaterial({ color: 0x00FF00 })
-                var sphere3Material = new THREE.MeshPhongMaterial({ color: 0x0000FF })
-
-                // create a objects
-                cube = new THREE.Mesh(cubeGeometry, cubeMaterials)
-                cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterials)
-                mars = new THREE.Mesh(marsGeometry, new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('textures/mars-texture.png'), side: THREE.DoubleSide }))
-                sphere1 = new THREE.Mesh(sphereLightsGeometry, sphere1Material)
-                sphere2 = new THREE.Mesh(sphereLightsGeometry, sphere2Material)
-                sphere3 = new THREE.Mesh(sphereLightsGeometry, sphere3Material)
-
-                // add objects to scene
-                // markerRoot1.add(cube)
-                // markerRoot1.add(cylinder)
-                // markerRoot1.add(mars)
-                // markerRoot1.add(sphere1)
-                // markerRoot1.add(sphere2)
-                // markerRoot1.add(sphere3)
-
-                // set starting position of objects
-                cube.position.x = -2
-                cylinder.position.x = 2
-                mars.position.x = 4
-
                 // create lighting
-                ambientLight = new THREE.AmbientLight(0xFFFFFF, 1)
-                pointLight1 = new THREE.PointLight(0xFF0000, 5, 10)
-                pointLight2 = new THREE.PointLight(0x00FF00, 5, 10)
-                pointLight3 = new THREE.PointLight(0x0000FF, 5, 10)
-                directionalLight = new THREE.DirectionalLight(0xFFFFFF, 5)
-                spotLight = new THREE.SpotLight(0xf44242, 0)
+                light = new THREE.PointLight(0xFFFFFF, 1, 100)
+                light.position.set(0, 4, 0)
+                light.castShadow = true
+                sceneGroup.add(light)
 
-                // set position of lighting
-                directionalLight.position.set(0, -2, 0)
-                spotLight.position.set(-10, 3, 0)
+                let lightSphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.8
+                    })
+                );
+                lightSphere.position.copy(light.position)
+                sceneGroup.add(lightSphere)
 
-                // add lighting to the scene
-                markerRoot1.add(ambientLight)
-                markerRoot1.add(pointLight1)
-                markerRoot1.add(pointLight2)
-                markerRoot1.add(pointLight3)
-                markerRoot1.add(directionalLight)
-                markerRoot1.add(spotLight)
+                let ambientLight = new THREE.AmbientLight(0x6F6666, 2);
+                sceneGroup.add(ambientLight)
             }
+
+            // let helper = new THREE.CameraHelper(light.shadow.camera);
+            // sceneGroup.add(helper)
 
             // game logic
             function update() {
-                // cube.rotation.x += 0.01
-                // cube.rotation.y += 0.005
-                // cylinder.rotation.z += 0.01
-                // cylinder.rotation.x += 0.005
-                // cylinder.rotation.y += 0.003
-                // mars.rotation.y += 0.02
-                // mars.rotation.z += 0.02
-
-                var time = Date.now() * 0.0005
-
-                // move pointLights around
-                pointLight1.position.x = Math.sin(time * 0.7) * 3
-                pointLight1.position.y = Math.cos(time * 0.5) * 4
-                pointLight1.position.z = Math.cos(time * 0.3) * 3
-                // sphere1.position.x = Math.sin(time * 0.7) * 3
-                // sphere1.position.y = Math.cos(time * 0.5) * 4
-                // sphere1.position.z = Math.cos(time * 0.3) * 3
-
-                pointLight2.position.x = Math.cos(time * 0.3) * 3
-                pointLight2.position.y = Math.sin(time * 0.5) * 4
-                pointLight2.position.z = Math.sin(time * 0.7) * 3
-                // sphere2.position.x = Math.cos(time * 0.3) * 3
-                // sphere2.position.y = Math.sin(time * 0.5) * 4
-                // sphere2.position.z = Math.sin(time * 0.7) * 3
-
-                pointLight3.position.x = Math.sin(time * 0.7) * 3
-                pointLight3.position.y = Math.cos(time * 0.3) * 4
-                pointLight3.position.z = Math.sin(time * 0.5) * 3
-                // sphere3.position.x = Math.sin(time * 0.7) * 3
-                // sphere3.position.y = Math.cos(time * 0.3) * 4
-                // sphere3.position.z = Math.sin(time * 0.5) * 3
-                // update artoolkit on every frame
+                // console.log(camera.position)
+                light.position.set(camera.position.x, camera.position.y, camera.position.z + 1)
                 if (arToolkitSource.ready !== false)
                     arToolkitContext.update(arToolkitSource.domElement)
             }
