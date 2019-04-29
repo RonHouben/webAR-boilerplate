@@ -139,7 +139,7 @@
 
                 // create lighting
                 light = new THREE.PointLight(0xFFFFFF, 1, 100)
-                light.position.copy(camera.position)
+                light.position.set(0, 0, 4)
                 light.castShadow = true
                 sceneGroup.add(light)
 
@@ -163,8 +163,8 @@
 
             // game logic
             function update() {
-                // console.log(camera.position)
-                light.position.copy(camera.position)
+                // console.log(markerRoot.position)
+                // light.position.copy(camera.position)
                 if (arToolkitSource.ready !== false)
                     arToolkitContext.update(arToolkitSource.domElement)
             }
