@@ -10,6 +10,8 @@ let videoElement
 let controls
 let sphere
 
+const ENABLE_AR = true
+
 initialize()
 animate()
 
@@ -20,10 +22,14 @@ function initialize() {
 
     // camera = new THREE.PerspectiveCamera()
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
-    controls = new THREE.OrbitControls(camera)
-    camera.position.set(0, 0, 1)
-    camera.position.y = Math.PI / 1
-    controls.update();
+    // Remove controls when ENABLE_AR = true?
+    if (ENABLE_AR === false) {
+        camera.position.set(0, 0, 1)
+        camera.position.y = Math.PI / 1
+        controls = new THREE.OrbitControls(camera)
+        controls.update()
+    }
+
 
     scene.add(camera)
 
@@ -42,21 +48,27 @@ function initialize() {
     ////////////////////////////////////////////////////////////
     // setup arToolkitSource
     ////////////////////////////////////////////////////////////
-    // arToolkitSource = new THREEx.ArToolkitSource({
-    //     sourceType: 'webcam',
-    // })
+    if (ENABLE_AR === true) {
+        arToolkitSource = new THREEx.ArToolkitSource({
+            sourceType: 'webcam',
+        })
+    }
 
     function onResize() {
-        // arToolkitSource.onResizeElement()
-        // arToolkitSource.copyElementSizeTo(renderer.domElement)
-        // if (arToolkitContext.arController !== null) {
-        //     arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
-        // }
+        if (ENABLE_AR === true) {
+            arToolkitSource.onResizeElement()
+            arToolkitSource.copyElementSizeTo(renderer.domElement)
+            if (arToolkitContext.arController !== null) {
+                arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
+            }
+        }
     }
     // initiate webcam
-    // arToolkitSource.init(function onReady() {
-    //     onResize()
-    // })
+    if (ENABLE_AR === true) {
+        arToolkitSource.init(function onReady() {
+            onResize()
+        })
+    }
 
     // handle resize event
     window.addEventListener('resize', function() {
@@ -66,16 +78,18 @@ function initialize() {
     ////////////////////////////////////////////////////////////
     // setup arToolkitContext
     ////////////////////////////////////////////////////////////
-    // create atToolkitContext
-    // arToolkitContext = new THREEx.ArToolkitContext({
-    //     cameraParametersUrl: '../data/camera_para.dat',
-    //     detectionMode: 'mono'
-    // })
+    if (ENABLE_AR === true) {
+        // create atToolkitContext
+        arToolkitContext = new THREEx.ArToolkitContext({
+            cameraParametersUrl: '../data/camera_para.dat',
+            detectionMode: 'mono'
+        })
 
-    // copy projection matrix to camera when initialization complete
-    // arToolkitContext.init(function onCompleted() {
-    //     camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
-    // })
+        // copy projection matrix to camera when initialization complete
+        arToolkitContext.init(function onCompleted() {
+            camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
+        })
+    }
 
     ////////////////////////////////////////////////////////////
     // setup markerRoots
@@ -83,10 +97,11 @@ function initialize() {
     // build markerControls
     markerRoot = new THREE.Group()
     scene.add(markerRoot)
-    // let markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
-    //     type: 'pattern', patternUrl: "../data/hiro.patt",
-    // })
-
+    if (ENABLE_AR === true) {
+        let markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+            type: 'pattern', patternUrl: "../data/hiro.patt",
+        })
+    }
 
     ////////////////////////////////////////////////////////////
     // setup scene
@@ -160,8 +175,8 @@ function initialize() {
 
     // Make video mesh
     let videoMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xFF5733, map: videoTexture, side: THREE.DoubleSide })
+        new THREE.CircleGeometry(0.01, 35),
+        new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide })
     )
     videoMesh.rotation.x = -Math.PI / 2
     videoMesh.name = 'videoMesh'
@@ -171,8 +186,10 @@ function initialize() {
 
 // update logic
 function update() {
-    // if (arToolkitSource.ready !== false)
-    //     arToolkitContext.update(arToolkitSource.domElement)
+    if (ENABLE_AR === true) {
+        if (arToolkitSource.ready !== false)
+            arToolkitContext.update(arToolkitSource.domElement)
+    }
 }
 
 // draw scene
@@ -183,7 +200,17 @@ function render() {
 // run game loop (update, render, repeat)
 function animate() {
     window.addEventListener('click', onClick, false)
-    document.addEventListener('touchend', onTouch, false)
+    window.addEventListener('touchend', onTouch, false)
+
+    let x = scene.children[ 1 ].children[ 0 ].children[ 4 ].scale.x
+    let y = scene.children[ 1 ].children[ 0 ].children[ 4 ].scale.y
+    let z = scene.children[ 1 ].children[ 0 ].children[ 4 ].scale.z
+    // Animate scaling of video
+    if (x < 150 && z < 150) {
+        x += 0.1
+        z += 0.1
+        scene.children[ 1 ].children[ 0 ].children[ 4 ].scale.set(x, y, z)
+    }
 
     requestAnimationFrame(animate)
 
@@ -203,7 +230,6 @@ function onClick(event) {
     raycaster.setFromCamera(mouse, camera);
     // calculate objects intersecting the picking ray
     let intersects = raycaster.intersectObjects(scene.children, true);
-    intersects.forEach(intersect => console.log(intersect))
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
     intersects.forEach(intersect => intersect.object.name == 'sphere' ? intersect.object.material.color.set(0xaff999) : null)
 }
@@ -217,7 +243,6 @@ function onTouch(event) {
     raycaster.setFromCamera(mouse, camera);
     // calculate objects intersecting the picking ray
     let intersects = raycaster.intersectObjects(scene.children, true);
-    intersects.forEach(intersect => console.log(intersect))
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
     intersects.forEach(intersect => intersect.object.name == 'sphere' ? intersect.object.material.color.set(0xaff999) : null)
 }
