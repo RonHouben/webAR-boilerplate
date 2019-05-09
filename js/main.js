@@ -53,7 +53,7 @@ function initialize() {
          ************************/
         // create arToolkitContext
         const arToolkitContext = new THREEx.ArToolkitContext({
-            cameraParametersUrl: '../data/camera_para.dat',
+            cameraParametersUrl: '../ar-markers/camera_para.dat',
             detectionMode: 'mono'
         })
         // copy project matrix to camera when initialization is complete
@@ -66,7 +66,7 @@ function initialize() {
          *******************/
         // create ArMarkerControls
         new THREEx.ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
-            type: 'pattern', patternUrl: "../data/hiro.patt",
+            type: 'pattern', patternUrl: "../ar-markers/hiro.patt",
         })
     } else if (enable_ar === false) {
         scene.getObjectByName('camera').position.y = Math.PI / 1
@@ -88,7 +88,7 @@ function initialize() {
     function loaderOnError(error) { console.error('An error happened with loading the gltf model:\n', error) }
 
     loader.load(
-        '../models/accenture-ar.gltf',
+        '../3d-models/accenture-ar.gltf',
         function(group) {
             let logo = group.scene
             logo.scale.set(0.2, 0.2, 0.2)
