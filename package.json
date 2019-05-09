@@ -1,0 +1,39 @@
+{
+  "name": "accenture-ar",
+  "version": "0.0.1",
+  "description": "AR Project for Accenture to tell the Accenture Techvision story.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel src/index.html",
+    "prod": "parcel build src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RonHouben/accenture-ar.git"
+  },
+  "keywords": [
+    "AR",
+    "Augmented",
+    "Reality",
+    "ar.js",
+    "three.js",
+    "markers"
+  ],
+  "author": "Ron Houben",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RonHouben/accenture-ar/issues"
+  },
+  "homepage": "https://github.com/RonHouben/accenture-ar#readme",
+  "dependencies": {
+    "jsartoolkit5": "0.0.4",
+    "node-ar.js": "0.0.5",
+    "three": "^0.104.0",
+    "three-orbitcontrols": "^2.102.1",
+    "threex": "^1.0.0"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  }
+}
