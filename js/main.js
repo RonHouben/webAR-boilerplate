@@ -1,7 +1,7 @@
 // set the use strict for accidentalt creation of global variables
 "use strict"
 
-import { getState, setState } from './Store.js'
+import { getState, setState } from './store.js'
 
 setState({ enable_ar: false })
 
