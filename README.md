@@ -1,4 +1,4 @@
-# accenture-ar - Work In Progress
+# webAR-boilerplate - Work In Progress
 This project is still very much in draft phase and heavily in progress.\
 The purpose of the project is to create a boilerplate project for creating webAR applications.
 
