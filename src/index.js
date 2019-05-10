@@ -4,7 +4,7 @@
 import * as THREE from 'three'
 import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-const OrbitControls = require('three-orbitcontrols')
+import OrbitControls from 'three-orbitcontrols'
 import { getState, setState } from './store'
 
 setState({ enable_ar: false })
@@ -58,7 +58,7 @@ function initialize() {
          ************************/
         // create arToolkitContext
         const arToolkitContext = new ArToolkitContext({
-            cameraParametersUrl: './ar-markers/camera_para.dat',
+            cameraParametersUrl: 'src/ar-markers/camera_para.dat',
             detectionMode: 'mono'
         })
         // copy project matrix to camera when initialization is complete
@@ -71,7 +71,7 @@ function initialize() {
          *******************/
         // create ArMarkerControls
         new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
-            type: 'pattern', patternUrl: "./ar-markers/hiro.patt",
+            type: 'pattern', patternUrl: "src/ar-markers/hiro.patt",
         })
     } else if (enable_ar === false) {
         scene.getObjectByName('camera').position.y = Math.PI / 1
@@ -93,7 +93,7 @@ function initialize() {
     function loaderOnError(error) { console.error('An error happened with loading the gltf model:\n', error) }
 
     loader.load(
-        '/3d-models/accenture-ar.gltf',
+        'src/3d-models/accenture-ar.gltf',
         function(group) {
             let logo = group.scene
             logo.scale.set(0.2, 0.2, 0.2)
