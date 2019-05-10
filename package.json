@@ -1,0 +1,42 @@
+{
+  "name": "accenture-ar",
+  "version": "0.0.1",
+  "description": "AR Project for Accenture to tell the Accenture Techvision story.",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RonHouben/accenture-ar.git"
+  },
+  "keywords": [
+    "AR",
+    "Augmented",
+    "Reality",
+    "ar.js",
+    "three.js",
+    "markers"
+  ],
+  "author": "Ron Houben",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RonHouben/accenture-ar/issues"
+  },
+  "homepage": "https://github.com/RonHouben/accenture-ar#readme",
+  "dependencies": {
+    "jsartoolkit5": "0.0.4",
+    "node-ar.js": "0.0.5",
+    "three": "^0.104.0",
+    "three-orbitcontrols": "^2.102.1"
+  },
+  "devDependencies": {
+    "webpack": "^4.31.0",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.3.1",
+    "webpack-node-externals": "^1.7.2"
+  }
+}

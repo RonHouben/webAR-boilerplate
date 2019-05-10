@@ -5,31 +5,16 @@
         <meta charset='UTF-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-        <link rel='stylesheet' href='styles/style.css'>
-        <!-- include three.js library -->
-        <script type='text/javascript' src='js/threejs/three.js'></script>
-        <script type='text/javascript' src='js/threejs/GLTFLoader.js'></script>
-        <!-- include jsartookit -->
-        <script src="js/jsartoolkit5/artoolkit.min.js"></script>
-        <script src="js/jsartoolkit5/artoolkit.api.js"></script>
-        <!-- include threex.artoolkit -->
-        <script src="js/threex/threex.artoolkitsource.js"></script>
-        <script src="js/threex/threex.artoolkitcontext.js"></script>
-        <script src="js/threex/threex.arbasecontrols.js"></script>
-        <script src="js/threex/threex.armarkercontrols.js"></script>
-        <script src="js/threex/threex.windowresize.js"></script>
-        <script src="js/threejs/OrbitControls.js"></script>
-
-        <title>AR test</title>
+        <link rel='stylesheet' href='/src/styles/main.css'>
+        <title>Accenture AR</title>
     </head>
 
     <body>
         <video id="video" width="150px" height="auto" playsinline hidden>
-            <source src="video/Tech Vision 2019 Overview.mp4" type="video/mp4">
+            <source src="/src/videos/Tech-Vision-2019-Overview.mp4" type="video/mp4">
         </video>
         <!-- include main.js file -->
-        <script type="module" src="js/store.js"></script>
-        <script type="module" src="js/main.js"></script>
+        <script src="dist/main.js"></script>
     </body>
 
 </html>

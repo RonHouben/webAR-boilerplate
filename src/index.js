@@ -1,7 +1,11 @@
 // set the use strict for accidentalt creation of global variables
 "use strict"
 
-import { getState, setState } from './store.js'
+import * as THREE from 'three'
+import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import OrbitControls from 'three-orbitcontrols'
+import { getState, setState } from './store'
 
 setState({ enable_ar: false })
 
@@ -42,7 +46,8 @@ function initialize() {
          * setup arToolkitSource
          ***********************/
         // create the arToolkitSource (webcam, img)
-        const arToolkitSource = new THREEx.ArToolkitSource({
+        const _artoolkitsource = ArToolkitSource(THREE)
+        const arToolkitSource = new _artoolkitsource({
             sourceType: 'webcam',
         })
         // initiate the arToolkitSource
@@ -52,8 +57,8 @@ function initialize() {
          * setup arToolkitContext
          ************************/
         // create arToolkitContext
-        const arToolkitContext = new THREEx.ArToolkitContext({
-            cameraParametersUrl: '../ar-markers/camera_para.dat',
+        const arToolkitContext = new ArToolkitContext({
+            cameraParametersUrl: 'src/ar-markers/camera_para.dat',
             detectionMode: 'mono'
         })
         // copy project matrix to camera when initialization is complete
@@ -65,12 +70,12 @@ function initialize() {
          * setup markerRoots
          *******************/
         // create ArMarkerControls
-        new THREEx.ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
-            type: 'pattern', patternUrl: "../ar-markers/hiro.patt",
+        new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
+            type: 'pattern', patternUrl: "src/ar-markers/hiro.patt",
         })
     } else if (enable_ar === false) {
         scene.getObjectByName('camera').position.y = Math.PI / 1
-        const controls = new THREE.OrbitControls(scene.getObjectByName('camera'))
+        const controls = new OrbitControls(scene.getObjectByName('camera'))
         controls.update()
     }
 
@@ -82,13 +87,13 @@ function initialize() {
     scene.getObjectByName('markerRoot').add(sceneGroup)
 
     // Load a glTF resource
-    let loader = new THREE.GLTFLoader()
+    let loader = new GLTFLoader()
 
     function loaderOnProgress(model) { console.log('gltf model ' + (model.loaded / model.total * 100) + '% loaded') }
     function loaderOnError(error) { console.error('An error happened with loading the gltf model:\n', error) }
 
     loader.load(
-        '../3d-models/accenture-ar.gltf',
+        'src/3d-models/accenture-ar.gltf',
         function(group) {
             let logo = group.scene
             logo.scale.set(0.2, 0.2, 0.2)
@@ -214,6 +219,7 @@ function animate() {
 }
 
 function onClick(event) {
+    const { videoElement } = getState()
     const { raycaster, mouse, scene } = getState()
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
