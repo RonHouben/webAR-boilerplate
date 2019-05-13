@@ -15,30 +15,33 @@ animate()
 
 function initialise() {
     // initialize the renderer
-    init.renderer()
+    const renderer = init.renderer()
     // initialize the scene
-    init.scene('scene')
+    const scene = init.scene('scene')
     // initialize sceneGroup
-    init.sceneGroup('sceneGroup')
+    const sceneGroup = init.sceneGroup('sceneGroup', scene)
     // initialize the camera
-    init.camera('camera')
+    const camera = init.camera('camera', scene)
     // initialize the raycaster
-    init.raycaster()
+    const raycaster = init.raycaster()
+
+    setState({ renderer, scene, sceneGroup, camera, raycaster })
     // check if AR is enabled
-    const { enable_ar, camera, sceneGroup } = getState()
+    const { enable_ar } = getState()
 
     if (enable_ar) {
         // initialize arToolkitSource
-        init.arToolkitSource('webcam', onResize)
+        const arToolkitSource = init.arToolkitSource('webcam', enable_ar, camera, renderer, onResize)
         // initialize arToolkitContext
-        init.arToolkitContext('src/assets/ar-markers/camera_para.dat', 'mono')
+        const arToolkitContext = init.arToolkitContext(camera, 'src/assets/ar-markers/camera_para.dat', 'mono')
         // initialize arMarkerRoots
-        init.arMarkerRoot('markerRoot')
+        const arMarkerRoot = init.arMarkerRoot('markerRoot', scene, sceneGroup)
         // initialize arMarkerControls
-        init.arMarkerControls('pattern', 'src/assets/ar-markers/hiro.patt')
+        const arMarkerControls = init.arMarkerControls(arToolkitContext, arMarkerRoot, 'pattern', 'src/assets/ar-markers/hiro.patt')
+        setState({ arToolkitSource, arToolkitContext })
     } else {
         // initialize OrbitControls
-        init.orbitControls(camera)
+        const orbitControls = init.orbitControls(camera)
     }
 
     // add eventlistener for window resizing & click/touch events
@@ -113,7 +116,9 @@ function initialise() {
 
 // function to add event listers
 function addEventListeners() {
-    window.addEventListener('resize', () => onResize())
+    const { enable_ar, camera, renderer, arToolkitSource } = getState()
+
+    window.addEventListener('resize', () => onResize(enable_ar, camera, renderer, arToolkitSource))
     window.addEventListener('click', onClick, false)
     window.addEventListener('touchend', onTouch, false)
 }
@@ -156,27 +161,28 @@ function animate() {
 
 function onClick(event) {
     const { videoElement } = getState()
-    const { raycaster, mouse, scene, camera } = getState()
+    const { raycaster, scene, camera } = getState()
+
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
+    raycaster.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    raycaster.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
 
     // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera)
+    raycaster.raycaster.setFromCamera(raycaster.mouse, camera)
     // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(scene.children, true)
+    const intersects = raycaster.raycaster.intersectObjects(scene.children, true)
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
 }
 
 function onTouch(event) {
-    const { raycaster, mouse, scene, camera } = getState()
+    const { raycaster, scene, camera } = getState()
 
-    mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.changedTouches[ 0 ].clientY / window.innerHeight) * 2 + 1
+    raycaster.mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
+    raycaster.mouse.y = -(event.changedTouches[ 0 ].clientY / window.innerHeight) * 2 + 1
 
     // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera)
+    raycaster.raycaster.setFromCamera(raycaster.mouse, camera)
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects(scene.children, true)
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)

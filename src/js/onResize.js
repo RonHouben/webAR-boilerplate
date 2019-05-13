@@ -1,8 +1,6 @@
 import { getState } from './store'
 
-export const onResize = () => {
-    const { enable_ar, camera, renderer, arToolkitSource } = getState()
-
+export const onResize = (enable_ar, camera, renderer, arToolkitSource) => {
     if (enable_ar) {
         // call the arToolkitSource.onResizeElement() function.
         arToolkitSource.onResizeElement()
