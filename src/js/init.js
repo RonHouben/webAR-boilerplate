@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
+import OrbitControls from 'three-orbitcontrols'
 import { getState, setState } from './store'
 
 export const init = {
@@ -105,5 +106,13 @@ export const init = {
         new ArMarkerControls(arToolkitContext, markerRoot, {
             type: type, patternUrl: patternUrl
         })
+    },
+    orbitControls(camera) {
+        // rotate the camera y position so the scene is seen from the front
+        camera.position.y = Math.PI / 1
+        // create a new OrbitControl object with camera as input
+        const controls = new OrbitControls(camera)
+        // update the controls
+        controls.update()
     }
 }

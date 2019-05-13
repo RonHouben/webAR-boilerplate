@@ -3,13 +3,12 @@
 
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import OrbitControls from 'three-orbitcontrols'
 import { getState, setState } from './js/store'
 import { init } from './js/init'
 import { onResize } from './js/onResize'
 
 // The following configures wether to use AR or not
-setState({ enable_ar: true })
+setState({ enable_ar: false })
 
 initialise()
 animate()
@@ -39,13 +38,7 @@ function initialise() {
         init.arMarkerControls('pattern', 'src/assets/ar-markers/hiro.patt')
     } else {
         // initialize OrbitControls
-
-        // rotate the camera y position so the scene is seen from the front
-        camera.position.y = Math.PI / 1
-        // create a new OrbitControl object
-        const controls = new OrbitControls(camera)
-        // update the controls
-        controls.update()
+        init.orbitControls(camera)
     }
 
     // add eventlistener for window resizing & click/touch events
