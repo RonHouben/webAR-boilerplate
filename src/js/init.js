@@ -26,6 +26,17 @@ export const init = {
         // add scene to the global state store
         setState({ scene })
     },
+    sceneGroup(name) {
+        // create a new group
+        const sceneGroup = new THREE.Group()
+        // change the name of the scenegroup to make it easily recognizable
+        sceneGroup.name = name
+        // add sceneGroup to the global state store
+        setState({ sceneGroup })
+        // add to the scene
+        const { scene } = getState()
+        scene.add(sceneGroup)
+    },
     camera(name) {
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
@@ -67,6 +78,7 @@ export const init = {
         // initialize the arToolkitContext and copy the projection matrix to camera
         // when initialization is complete
         const { camera } = getState()
+
         arToolkitContext.init(() =>
             camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
         )
@@ -80,8 +92,11 @@ export const init = {
         markerRoot.name = name
         // add the markerRoot to the global state
         setState({ markerRoot })
+        // add the sceneGroup to the markerRoot
+        const { sceneGroup, scene } = getState()
+
+        markerRoot.add(sceneGroup)
         // add it to the scene
-        const { scene } = getState()
         scene.add(markerRoot)
     },
     arMarkerControls(type, patternUrl) {

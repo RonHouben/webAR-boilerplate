@@ -1,8 +1,7 @@
-// set the use strict for accidentalt creation of global variables
+// set the use strict for accidental creation of global variables
 "use strict"
 
 import * as THREE from 'three'
-import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import OrbitControls from 'three-orbitcontrols'
 import { getState, setState } from './js/store'
@@ -20,12 +19,14 @@ function initialise() {
     init.renderer()
     // initialize the scene
     init.scene('scene')
+    // initialize sceneGroup
+    init.sceneGroup('sceneGroup')
     // initialize the camera
     init.camera('camera')
     // initialize the raycaster
     init.raycaster()
     // check if AR is enabled
-    const { enable_ar, camera, scene } = getState()
+    const { enable_ar, camera, sceneGroup } = getState()
 
     if (enable_ar) {
         // initialize arToolkitSource
@@ -37,20 +38,18 @@ function initialise() {
         // initialize arMarkerControls
         init.arMarkerControls('pattern', 'src/assets/ar-markers/hiro.patt')
     } else {
+        // initialize OrbitControls
+
+        // rotate the camera y position so the scene is seen from the front
         camera.position.y = Math.PI / 1
+        // create a new OrbitControl object
         const controls = new OrbitControls(camera)
+        // update the controls
         controls.update()
     }
 
     // add eventlistener for window resizing & click/touch events
     addEventListeners()
-
-    ////////////////////////////////////////////////////////////
-    // setup scene
-    ////////////////////////////////////////////////////////////
-
-    let sceneGroup = new THREE.Group()
-    scene.getObjectByName('markerRoot').add(sceneGroup)
 
     // Load a glTF resource
     let loader = new GLTFLoader()
