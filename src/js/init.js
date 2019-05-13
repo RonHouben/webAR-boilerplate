@@ -33,5 +33,13 @@ export const init = {
         // add the camera to the scene
         const { scene } = getState()
         scene.add(camera)
+    },
+    raycaster() {
+        // create a new raycaster object
+        const raycaster = new THREE.Raycaster()
+        // create a new mouse object
+        const mouse = new THREE.Vector2()
+        // add the raycaster and mouse to the global state
+        setState({ raycaster, mouse })
     }
 }

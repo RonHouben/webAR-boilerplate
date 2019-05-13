@@ -18,24 +18,16 @@ function initialise() {
     init.renderer()
     // initialize the scene
     init.scene()
-    const { scene } = getState()
     // initialize the camera
     init.camera()
-    // const scene = new THREE.Scene()
-    const raycaster = new THREE.Raycaster()
-    const mouse = new THREE.Vector2()
-    // scene.name = 'scene'
+    // initialize the raycaster
+    init.raycaster()
+
     // create a markerRoot group
     const markerRoot = new THREE.Group()
     markerRoot.name = 'markerRoot'
+    const { scene } = getState()
     scene.add(markerRoot)
-
-    setState({ raycaster, mouse })
-
-    // setup the camera and add it to the scene
-    // const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
-    // camera.name = 'camera'
-    // scene.add(camera)
 
     // add eventlistener for window resizing & click/touch events
     addEventListeners()
