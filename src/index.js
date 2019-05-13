@@ -16,28 +16,26 @@ function initialise() {
     setState({ enable_ar: false })
     // initialize the renderer
     init.renderer()
-    const scene = new THREE.Scene()
+    // initialize the scene
+    init.scene()
+    const { scene } = getState()
+    // initialize the camera
+    init.camera()
+    // const scene = new THREE.Scene()
     const raycaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
-    scene.name = 'scene'
+    // scene.name = 'scene'
     // create a markerRoot group
     const markerRoot = new THREE.Group()
     markerRoot.name = 'markerRoot'
     scene.add(markerRoot)
-    // setup the renderer and add it to the page
-    // const renderer = new THREE.WebGLRenderer({
-    //     antialias: true,
-    //     alpha: true
-    // })
-    setState({ scene, raycaster, mouse })
-    // renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-    // renderer.setSize(window.innerWidth, window.innerHeight)
-    // document.body.appendChild(renderer.domElement)
+
+    setState({ raycaster, mouse })
 
     // setup the camera and add it to the scene
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.name = 'camera'
-    scene.add(camera)
+    // const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
+    // camera.name = 'camera'
+    // scene.add(camera)
 
     // add eventlistener for window resizing & click/touch events
     addEventListeners()
