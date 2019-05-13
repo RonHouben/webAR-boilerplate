@@ -19,9 +19,9 @@ function initialise() {
     // initialize the renderer
     init.renderer()
     // initialize the scene
-    init.scene()
+    init.scene('scene')
     // initialize the camera
-    init.camera()
+    init.camera('camera')
     // initialize the raycaster
     init.raycaster()
     // check if AR is enabled
@@ -31,35 +31,19 @@ function initialise() {
         // initialize arToolkitSource
         init.arToolkitSource('webcam', onResize)
         // initialize arToolkitContext
-        init.ArToolkitContext('src/assets/ar-markers/camera_para.dat', 'mono')
-        // initialize arMarkerControls (setup of markerRoots)
-
+        init.arToolkitContext('src/assets/ar-markers/camera_para.dat', 'mono')
+        // initialize arMarkerRoots
+        init.arMarkerRoot('markerRoot')
+        // initialize arMarkerControls
+        init.arMarkerControls('pattern', 'src/assets/ar-markers/hiro.patt')
     } else {
         camera.position.y = Math.PI / 1
         const controls = new OrbitControls(camera)
         controls.update()
     }
 
-    // create a markerRoot group
-    const markerRoot = new THREE.Group()
-    markerRoot.name = 'markerRoot'
-    scene.add(markerRoot)
-
     // add eventlistener for window resizing & click/touch events
     addEventListeners()
-
-
-
-    if (enable_ar === true) {
-        /********************
-         * setup markerRoots
-         *******************/
-        const { arToolkitContext } = getState()
-        // create ArMarkerControls
-        new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
-            type: 'pattern', patternUrl: "src/assets/ar-markers/hiro.patt",
-        })
-    }
 
     ////////////////////////////////////////////////////////////
     // setup scene

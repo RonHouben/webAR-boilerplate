@@ -18,19 +18,19 @@ export const init = {
         // add renderer to the global state store
         setState({ renderer })
     },
-    scene() {
+    scene(name) {
         // create a new empty scene object
         const scene = new THREE.Scene()
         // change the name of the scene so it's easily recognizable
-        scene.name = 'scene'
+        scene.name = name
         // add scene to the global state store
         setState({ scene })
     },
-    camera() {
+    camera(name) {
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
         // change the name of the camera so it's easily recognizable
-        camera.name = 'camera'
+        camera.name = name
         // add camera to the global state store
         setState({ camera })
         // add the camera to the scene
@@ -58,8 +58,7 @@ export const init = {
         // add the arToolkitSource to the global state
         setState({ arToolkitSource })
     },
-    ArToolkitContext(cameraParametersUrl, detectionMode) {
-        const { camera } = getState()
+    arToolkitContext(cameraParametersUrl, detectionMode) {
         // create new arToolkitContext object
         const arToolkitContext = new ArToolkitContext({
             cameraParametersUrl: cameraParametersUrl,
@@ -67,10 +66,29 @@ export const init = {
         })
         // initialize the arToolkitContext and copy the projection matrix to camera
         // when initialization is complete
+        const { camera } = getState()
         arToolkitContext.init(() =>
             camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
         )
         // add the arToolkitContext to the global state
         setState({ arToolkitContext })
+    },
+    arMarkerRoot(name) {
+        // create a markerRoot group
+        const markerRoot = new THREE.Group()
+        // change the name to make it recognizable
+        markerRoot.name = name
+        // add the markerRoot to the global state
+        setState({ markerRoot })
+        // add it to the scene
+        const { scene } = getState()
+        scene.add(markerRoot)
+    },
+    arMarkerControls(type, patternUrl) {
+        const { arToolkitContext, markerRoot } = getState()
+        // create ArMarkerControls
+        new ArMarkerControls(arToolkitContext, markerRoot, {
+            type: type, patternUrl: patternUrl
+        })
     }
 }
