@@ -111,11 +111,15 @@ export const init = {
         return controls
     },
     cacheDOMElementsByID: (elementIDs) => {
-        return elementIDs.map(element => (
-            {
+        return elementIDs.map((element) => {
+            const html = document.getElementById(element)
+            const tagName = html.tagName
+
+            return {
                 id: element,
-                html: document.getElementById(element)
+                html,
+                tagName
             }
-        ))
+        })
     }
 }

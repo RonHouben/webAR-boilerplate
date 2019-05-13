@@ -1,11 +1,12 @@
 // set the use strict for accidental creation of global variables
-"use strict"
+// "use strict"
 
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { getState, setState } from './js/store'
 import { init } from './js/init'
 import { events } from './js/events'
+import { video } from './js/video'
 
 // The following configures wether to use AR or not
 setState({ enable_ar: false })
@@ -46,12 +47,13 @@ function initialise() {
     }
     // initialize caching of DOM elements which need to be interacted with
     const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
+    const videoElement = video.getVideoHTMLelementByID('video', cacheDOM)
     setState({ cacheDOM })
 
     // add eventlistener for window resizing & click/touch events
     const { arToolkitSource } = getState()
-    events.addEventListeners(enable_ar, camera, renderer, arToolkitSource, raycaster, scene)
-    addEventListeners()
+    const objectsClickActions = [ { objectName: 'videoMesh', htmlElement: videoElement, action: video.playPauseVideo } ]
+    events.addEventListeners(enable_ar, camera, renderer, arToolkitSource, objectsClickActions, raycaster, scene)
 
     // Load a glTF resource
     let loader = new GLTFLoader()
@@ -116,15 +118,6 @@ function initialise() {
     videoGroup.add(videoMesh)
 }
 
-// function to add event listers
-function addEventListeners() {
-    const { enable_ar, camera, renderer, arToolkitSource } = getState()
-
-    // window.addEventListener('resize', () => events.onResize(enable_ar, camera, renderer, arToolkitSource))
-    // window.addEventListener('click', onClick, false)
-    window.addEventListener('touchend', onTouch, false)
-}
-
 // update logic
 function update() {
     const { enable_ar, arToolkitSource, arToolkitContext } = getState()
@@ -159,22 +152,6 @@ function animate() {
     requestAnimationFrame(animate)
     update()
     render()
-}
-
-function onClick(event) {
-    const { videoElement } = getState()
-    const { raycaster, scene, camera } = getState()
-
-    // calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-    raycaster.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    raycaster.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
-
-    // update the picking ray with the camera and mouse position
-    raycaster.raycaster.setFromCamera(raycaster.mouse, camera)
-    // calculate objects intersecting the picking ray
-    const intersects = raycaster.raycaster.intersectObjects(scene.children, true)
-    intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
 }
 
 function onTouch(event) {

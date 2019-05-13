@@ -1,7 +1,7 @@
 export const events = {
-    addEventListeners: (enable_ar, camera, renderer, arToolkitSource, raycasterObject, scene) => {
+    addEventListeners: (enable_ar, camera, renderer, arToolkitSource, objectsClickActions, raycasterObject, scene) => {
         window.addEventListener('resize', () => events.onResize(enable_ar, camera, renderer, arToolkitSource))
-        window.addEventListener('click', event => events.onClick(event, raycasterObject, scene, camera), false)
+        window.addEventListener('click', event => events.onClick(event, objectsClickActions, raycasterObject, scene, camera), false)
         // window.addEventListener('touchend', onTouch, false)
     },
     onResize: (enable_ar, camera, renderer, arToolkitSource) => {
@@ -20,7 +20,7 @@ export const events = {
             renderer.setSize(window.innerWidth, window.innerHeight)
         }
     },
-    onClick: (event, raycasterObject, scene, camera) => {
+    onClick: (event, objectsClickActions, raycasterObject, scene, camera) => {
         const { raycaster, mouse } = raycasterObject
         // calculate mouse position in normalized device coordinates
         // (-1 to +1) for both components
@@ -32,12 +32,14 @@ export const events = {
         // calculate objects intersecting the picking ray
         const intersects = raycaster.intersectObjects(scene.children, true)
         // handle the clicked objects
-        intersects.forEach(intersect => {
-            if (intersect.object.name == 'videoMesh') {
-                console.log(intersect)
-                // playPauseVideo(videoElement)
-            }
-        })
-        return intersects
+        const closestIntersect = intersects[ 0 ]
+        // if there's a intersect, loop over the oobjects with click actions
+        if (closestIntersect) {
+            objectsClickActions.forEach((object) => {
+                if (object.objectName === closestIntersect.object.name) {
+                    object.action(object.htmlElement || null)
+                }
+            })
+        }
     }
 }
