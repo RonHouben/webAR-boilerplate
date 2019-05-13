@@ -10,7 +10,7 @@ import { init } from './js/init'
 import { onResize } from './js/onResize'
 
 // The following configures wether to use AR or not
-setState({ enable_ar: false })
+setState({ enable_ar: true })
 
 initialise()
 animate()
@@ -31,8 +31,9 @@ function initialise() {
         // initialize arToolkitSource
         init.arToolkitSource('webcam', onResize)
         // initialize arToolkitContext
-
+        init.ArToolkitContext('src/assets/ar-markers/camera_para.dat', 'mono')
         // initialize arMarkerControls (setup of markerRoots)
+
     } else {
         camera.position.y = Math.PI / 1
         const controls = new OrbitControls(camera)
@@ -50,33 +51,10 @@ function initialise() {
 
 
     if (enable_ar === true) {
-        /************************
-         * setup arToolkitSource
-         ***********************/
-        // create the arToolkitSource (webcam, img)
-        // const _artoolkitsource = ArToolkitSource(THREE)
-        // const arToolkitSource = new _artoolkitsource({
-        //     sourceType: 'webcam',
-        // })
-        // // initiate the arToolkitSource
-        // arToolkitSource.init(() => onResize())
-
-        /*************************
-         * setup arToolkitContext
-         ************************/
-        // create arToolkitContext
-        const arToolkitContext = new ArToolkitContext({
-            cameraParametersUrl: 'src/assets/ar-markers/camera_para.dat',
-            detectionMode: 'mono'
-        })
-        // copy project matrix to camera when initialization is complete
-        arToolkitContext.init(() =>
-            camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
-        )
-        setState({ arToolkitContext })
         /********************
          * setup markerRoots
          *******************/
+        const { arToolkitContext } = getState()
         // create ArMarkerControls
         new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
             type: 'pattern', patternUrl: "src/assets/ar-markers/hiro.patt",

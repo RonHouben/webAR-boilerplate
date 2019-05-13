@@ -57,5 +57,20 @@ export const init = {
         })
         // add the arToolkitSource to the global state
         setState({ arToolkitSource })
+    },
+    ArToolkitContext(cameraParametersUrl, detectionMode) {
+        const { camera } = getState()
+        // create new arToolkitContext object
+        const arToolkitContext = new ArToolkitContext({
+            cameraParametersUrl: cameraParametersUrl,
+            detectionMode: detectionMode
+        })
+        // initialize the arToolkitContext and copy the projection matrix to camera
+        // when initialization is complete
+        arToolkitContext.init(() =>
+            camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
+        )
+        // add the arToolkitContext to the global state
+        setState({ arToolkitContext })
     }
 }
