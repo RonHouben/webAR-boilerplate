@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { getState, setState } from './js/store'
 import { init } from './js/init'
-import { onResize } from './js/onResize'
+import { events } from './js/events'
 
 // The following configures wether to use AR or not
 setState({ enable_ar: false })
@@ -31,7 +31,7 @@ function initialise() {
 
     if (enable_ar) {
         // initialize arToolkitSource
-        const arToolkitSource = init.arToolkitSource('webcam', enable_ar, camera, renderer, onResize)
+        const arToolkitSource = init.arToolkitSource('webcam', enable_ar, camera, renderer, events.onResize)
         // initialize arToolkitContext
         const arToolkitContext = init.arToolkitContext(camera, 'src/assets/ar-markers/camera_para.dat', 'mono')
         // initialize arMarkerRoots
@@ -39,12 +39,18 @@ function initialise() {
         // initialize arMarkerControls
         const arMarkerControls = init.arMarkerControls(arToolkitContext, arMarkerRoot, 'pattern', 'src/assets/ar-markers/hiro.patt')
         setState({ arToolkitSource, arToolkitContext })
+
     } else {
         // initialize OrbitControls
         const orbitControls = init.orbitControls(camera)
     }
+    // initialize caching of DOM elements which need to be interacted with
+    const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
+    setState({ cacheDOM })
 
     // add eventlistener for window resizing & click/touch events
+    const { arToolkitSource } = getState()
+    events.addEventListeners(enable_ar, camera, renderer, arToolkitSource, raycaster, scene)
     addEventListeners()
 
     // Load a glTF resource
@@ -94,10 +100,6 @@ function initialise() {
     videoGroup.name = 'video'
     sceneGroup.add(videoGroup)
 
-    //assuming you have created a HTML video element with id="video"
-    const videoElement = document.getElementById('video')
-    setState({ videoElement })
-
     const videoTexture = new THREE.VideoTexture(videoElement)
     videoTexture.minFilter = THREE.LinearFilter
     videoTexture.magFilter = THREE.LinearFilter
@@ -118,8 +120,8 @@ function initialise() {
 function addEventListeners() {
     const { enable_ar, camera, renderer, arToolkitSource } = getState()
 
-    window.addEventListener('resize', () => onResize(enable_ar, camera, renderer, arToolkitSource))
-    window.addEventListener('click', onClick, false)
+    // window.addEventListener('resize', () => events.onResize(enable_ar, camera, renderer, arToolkitSource))
+    // window.addEventListener('click', onClick, false)
     window.addEventListener('touchend', onTouch, false)
 }
 

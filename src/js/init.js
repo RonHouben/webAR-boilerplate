@@ -3,7 +3,7 @@ import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import OrbitControls from 'three-orbitcontrols'
 
 export const init = {
-    renderer() {
+    renderer: () => {
         // create new renderer object
         const renderer = new THREE.WebGLRenderer({
             antialias: true,
@@ -18,7 +18,7 @@ export const init = {
         // return renderer
         return renderer
     },
-    scene(name) {
+    scene: name => {
         // create a new empty scene object
         const scene = new THREE.Scene()
         // change the name of the scene so it's easily recognizable
@@ -26,7 +26,7 @@ export const init = {
         // return scene
         return scene
     },
-    sceneGroup(name, scene) {
+    sceneGroup: (name, scene) => {
         // create a new group
         const sceneGroup = new THREE.Group()
         // change the name of the scenegroup to make it easily recognizable
@@ -36,7 +36,7 @@ export const init = {
         // return sceneGroup
         return sceneGroup
     },
-    camera(name, scene) {
+    camera: (name, scene) => {
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
         // change the name of the camera so it's easily recognizable
@@ -46,7 +46,7 @@ export const init = {
         // return camera
         return camera
     },
-    raycaster() {
+    raycaster: () => {
         // create a new raycaster object
         const raycaster = new THREE.Raycaster()
         // create a new mouse object
@@ -54,7 +54,7 @@ export const init = {
         // add the raycaster and mouse to the global state
         return { raycaster, mouse }
     },
-    arToolkitSource(sourceType, enable_ar, camera, renderer, onReady) {
+    arToolkitSource: (sourceType, enable_ar, camera, renderer, onReady) => {
         // create the arToolkitSource (webcam, img)
         const _artoolkitsource = ArToolkitSource(THREE)
         const arToolkitSource = new _artoolkitsource({
@@ -68,7 +68,7 @@ export const init = {
         // return arToolkitSource
         return arToolkitSource
     },
-    arToolkitContext(camera, cameraParametersUrl, detectionMode) {
+    arToolkitContext: (camera, cameraParametersUrl, detectionMode) => {
         // create new arToolkitContext object
         const arToolkitContext = new ArToolkitContext({
             cameraParametersUrl: cameraParametersUrl,
@@ -82,7 +82,7 @@ export const init = {
         // return arToolkitContext
         return arToolkitContext
     },
-    arMarkerRoot(name, scene, sceneGroup) {
+    arMarkerRoot: (name, scene, sceneGroup) => {
         // create a markerRoot group
         const markerRoot = new THREE.Group()
         // change the name to make it recognizable
@@ -94,13 +94,13 @@ export const init = {
         // return markerRoot
         return markerRoot
     },
-    arMarkerControls(arToolkitContext, markerRoot, type, patternUrl) {
+    arMarkerControls: (arToolkitContext, markerRoot, type, patternUrl) => {
         // create and return ArMarkerControls
         return new ArMarkerControls(arToolkitContext, markerRoot, {
             type: type, patternUrl: patternUrl
         })
     },
-    orbitControls(camera) {
+    orbitControls: (camera) => {
         // rotate the camera y position so the scene is seen from the front
         camera.position.y = Math.PI / 1
         // create a new OrbitControl object with camera as input
@@ -109,5 +109,13 @@ export const init = {
         controls.update()
         // return orbitControls
         return controls
+    },
+    cacheDOMElementsByID: (elementIDs) => {
+        return elementIDs.map(element => (
+            {
+                id: element,
+                html: document.getElementById(element)
+            }
+        ))
     }
 }
