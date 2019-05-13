@@ -5,15 +5,17 @@ import * as THREE from 'three'
 import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import OrbitControls from 'three-orbitcontrols'
-import { getState, setState } from './store'
+import { getState, setState } from './js/store'
+import { init } from './js/init'
 
-setState({ enable_ar: false })
-
-initialize()
+initialise()
 animate()
 
-function initialize() {
-    const { enable_ar } = getState()
+function initialise() {
+    // The following configures wether to use AR or not
+    setState({ enable_ar: false })
+    // initialize the renderer
+    init.renderer()
     const scene = new THREE.Scene()
     const raycaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
@@ -23,14 +25,14 @@ function initialize() {
     markerRoot.name = 'markerRoot'
     scene.add(markerRoot)
     // setup the renderer and add it to the page
-    const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true
-    })
-    setState({ scene, raycaster, mouse, renderer })
-    renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    document.body.appendChild(renderer.domElement)
+    // const renderer = new THREE.WebGLRenderer({
+    //     antialias: true,
+    //     alpha: true
+    // })
+    setState({ scene, raycaster, mouse })
+    // renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+    // renderer.setSize(window.innerWidth, window.innerHeight)
+    // document.body.appendChild(renderer.domElement)
 
     // setup the camera and add it to the scene
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
@@ -41,6 +43,7 @@ function initialize() {
     addEventListeners()
 
 
+    const { enable_ar } = getState()
     if (enable_ar === true) {
         /************************
          * setup arToolkitSource
@@ -58,7 +61,7 @@ function initialize() {
          ************************/
         // create arToolkitContext
         const arToolkitContext = new ArToolkitContext({
-            cameraParametersUrl: 'src/ar-markers/camera_para.dat',
+            cameraParametersUrl: 'src/assets/ar-markers/camera_para.dat',
             detectionMode: 'mono'
         })
         // copy project matrix to camera when initialization is complete
@@ -71,7 +74,7 @@ function initialize() {
          *******************/
         // create ArMarkerControls
         new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
-            type: 'pattern', patternUrl: "src/ar-markers/hiro.patt",
+            type: 'pattern', patternUrl: "src/assets/ar-markers/hiro.patt",
         })
     } else if (enable_ar === false) {
         scene.getObjectByName('camera').position.y = Math.PI / 1
@@ -89,11 +92,11 @@ function initialize() {
     // Load a glTF resource
     let loader = new GLTFLoader()
 
-    function loaderOnProgress(model) { console.log('gltf model ' + (model.loaded / model.total * 100) + '% loaded') }
+    function loaderOnProgress(model) { console.info('gltf model ' + (model.loaded / model.total * 100) + '% loaded') }
     function loaderOnError(error) { console.error('An error happened with loading the gltf model:\n', error) }
 
     loader.load(
-        'src/3d-models/accenture-ar.gltf',
+        'src/assets/3d-models/accenture-ar.gltf',
         function(group) {
             let logo = group.scene
             logo.scale.set(0.2, 0.2, 0.2)
@@ -151,10 +154,6 @@ function initialize() {
     videoMesh.name = 'videoMesh'
 
     videoGroup.add(videoMesh)
-
-    // log out the scene in JSON and object format for debugging
-    console.info('scene.JSON:', scene.toJSON())
-    console.info('scene object:', scene)
 }
 
 // function to add event listers

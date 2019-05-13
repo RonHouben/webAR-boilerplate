@@ -28,7 +28,6 @@
   },
   "homepage": "https://github.com/RonHouben/accenture-ar#readme",
   "dependencies": {
-    "jsartoolkit5": "0.0.4",
     "node-ar.js": "0.0.5",
     "three": "^0.104.0",
     "three-orbitcontrols": "^2.102.1"
