@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import { getState, setState } from './store'
 
 export const init = {
@@ -30,6 +31,8 @@ export const init = {
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
         // change the name of the camera so it's easily recognizable
         camera.name = 'camera'
+        // add camera to the global state store
+        setState({ camera })
         // add the camera to the scene
         const { scene } = getState()
         scene.add(camera)
@@ -41,5 +44,18 @@ export const init = {
         const mouse = new THREE.Vector2()
         // add the raycaster and mouse to the global state
         setState({ raycaster, mouse })
+    },
+    arToolkitSource(sourceType, onReady) {
+        // create the arToolkitSource (webcam, img)
+        const _artoolkitsource = ArToolkitSource(THREE)
+        const arToolkitSource = new _artoolkitsource({
+            sourceType: sourceType,
+        })
+        // initiate the arToolkitSource
+        arToolkitSource.init(() => onReady(), error => {
+            console.log('The following error occured while initializing arToolkitSource:', error)
+        })
+        // add the arToolkitSource to the global state
+        setState({ arToolkitSource })
     }
 }

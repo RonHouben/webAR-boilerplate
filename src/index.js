@@ -7,13 +7,15 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import OrbitControls from 'three-orbitcontrols'
 import { getState, setState } from './js/store'
 import { init } from './js/init'
+import { onResize } from './js/onResize'
+
+// The following configures wether to use AR or not
+setState({ enable_ar: false })
 
 initialise()
 animate()
 
 function initialise() {
-    // The following configures wether to use AR or not
-    setState({ enable_ar: false })
     // initialize the renderer
     init.renderer()
     // initialize the scene
@@ -22,29 +24,42 @@ function initialise() {
     init.camera()
     // initialize the raycaster
     init.raycaster()
+    // check if AR is enabled
+    const { enable_ar, camera, scene } = getState()
+
+    if (enable_ar) {
+        // initialize arToolkitSource
+        init.arToolkitSource('webcam', onResize)
+        // initialize arToolkitContext
+
+        // initialize arMarkerControls (setup of markerRoots)
+    } else {
+        camera.position.y = Math.PI / 1
+        const controls = new OrbitControls(camera)
+        controls.update()
+    }
 
     // create a markerRoot group
     const markerRoot = new THREE.Group()
     markerRoot.name = 'markerRoot'
-    const { scene } = getState()
     scene.add(markerRoot)
 
     // add eventlistener for window resizing & click/touch events
     addEventListeners()
 
 
-    const { enable_ar } = getState()
+
     if (enable_ar === true) {
         /************************
          * setup arToolkitSource
          ***********************/
         // create the arToolkitSource (webcam, img)
-        const _artoolkitsource = ArToolkitSource(THREE)
-        const arToolkitSource = new _artoolkitsource({
-            sourceType: 'webcam',
-        })
-        // initiate the arToolkitSource
-        arToolkitSource.init(() => onResize())
+        // const _artoolkitsource = ArToolkitSource(THREE)
+        // const arToolkitSource = new _artoolkitsource({
+        //     sourceType: 'webcam',
+        // })
+        // // initiate the arToolkitSource
+        // arToolkitSource.init(() => onResize())
 
         /*************************
          * setup arToolkitContext
@@ -56,9 +71,9 @@ function initialise() {
         })
         // copy project matrix to camera when initialization is complete
         arToolkitContext.init(() =>
-            scene.getObjectByName('camera').projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
+            camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
         )
-        setState({ arToolkitSource, arToolkitContext })
+        setState({ arToolkitContext })
         /********************
          * setup markerRoots
          *******************/
@@ -66,10 +81,6 @@ function initialise() {
         new ArMarkerControls(arToolkitContext, scene.getObjectByName('markerRoot'), {
             type: 'pattern', patternUrl: "src/assets/ar-markers/hiro.patt",
         })
-    } else if (enable_ar === false) {
-        scene.getObjectByName('camera').position.y = Math.PI / 1
-        const controls = new OrbitControls(scene.getObjectByName('camera'))
-        controls.update()
     }
 
     ////////////////////////////////////////////////////////////
@@ -153,24 +164,6 @@ function addEventListeners() {
     window.addEventListener('touchend', onTouch, false)
 }
 
-// Resize logic
-function onResize() {
-    const { enable_ar, scene, renderer, arToolkitSource, arToolkitContext } = getState()
-
-    if (enable_ar === true) {
-        arToolkitSource.onResizeElement()
-        arToolkitSource.copyElementSizeTo(renderer.domElement)
-        if (arToolkitContext.arController !== null) {
-            arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
-        }
-    } else if (enable_ar === false) {
-        scene.getObjectByName('camera').aspect = window.innerWidth / window.innerHeight
-        scene.getObjectByName('camera').updateProjectionMatrix()
-
-        renderer.setSize(window.innerWidth, window.innerHeight)
-    }
-}
-
 // update logic
 function update() {
     const { enable_ar, arToolkitSource, arToolkitContext } = getState()
@@ -183,9 +176,9 @@ function update() {
 
 // draw scene
 function render() {
-    const { scene, renderer } = getState()
+    const { renderer, scene, camera } = getState()
 
-    renderer.render(scene, scene.getObjectByName('camera'))
+    renderer.render(scene, camera)
 }
 
 // run game loop (update, render, repeat)
@@ -209,27 +202,27 @@ function animate() {
 
 function onClick(event) {
     const { videoElement } = getState()
-    const { raycaster, mouse, scene } = getState()
+    const { raycaster, mouse, scene, camera } = getState()
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
 
     // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, scene.getObjectByName('camera'))
+    raycaster.setFromCamera(mouse, camera)
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects(scene.children, true)
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
 }
 
 function onTouch(event) {
-    const { raycaster, mouse, scene } = getState()
+    const { raycaster, mouse, scene, camera } = getState()
 
     mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.changedTouches[ 0 ].clientY / window.innerHeight) * 2 + 1
 
     // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, scene.getObjectByName('camera'))
+    raycaster.setFromCamera(mouse, camera)
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects(scene.children, true)
     intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
