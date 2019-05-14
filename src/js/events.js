@@ -1,10 +1,15 @@
+import { getState } from './store'
+import { video } from './video';
+
 export const events = {
-    addEventListeners: (enable_ar, camera, renderer, arToolkitSource, objectsClickActions, raycasterObject, scene) => {
-        window.addEventListener('resize', () => events.onResize(enable_ar, camera, renderer, arToolkitSource))
-        window.addEventListener('click', event => events.onClick(event, objectsClickActions, raycasterObject, scene, camera), false)
-        // window.addEventListener('touchend', onTouch, false)
+    addEventListeners: objectsClickActions => {
+        window.addEventListener('resize', events.onResize)
+        window.addEventListener('click', event => events.onClick({ event, objectsClickActions }), false)
+        window.addEventListener('touchend', events.onTouch, false)
     },
-    onResize: (enable_ar, camera, renderer, arToolkitSource) => {
+    onResize: () => {
+        const { enable_ar, camera, renderer, arToolkitSource } = getState()
+
         if (enable_ar) {
             // call the arToolkitSource.onResizeElement() function.
             arToolkitSource.onResizeElement()
@@ -20,8 +25,8 @@ export const events = {
             renderer.setSize(window.innerWidth, window.innerHeight)
         }
     },
-    onClick: (event, objectsClickActions, raycasterObject, scene, camera) => {
-        const { raycaster, mouse } = raycasterObject
+    onClick: ({ event, objectsClickActions }) => {
+        const { raycaster, mouse, scene, camera } = getState()
         // calculate mouse position in normalized device coordinates
         // (-1 to +1) for both components
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -33,13 +38,28 @@ export const events = {
         const intersects = raycaster.intersectObjects(scene.children, true)
         // handle the clicked objects
         const closestIntersect = intersects[ 0 ]
-        // if there's a intersect, loop over the oobjects with click actions
+        // if there's a intersect, loop over the objectsClickActions
         if (closestIntersect) {
             objectsClickActions.forEach((object) => {
+                // Check if the objects name equals the intersects name.
                 if (object.objectName === closestIntersect.object.name) {
+                    // execute the objects action. Use null as paramater when htmlElement is omitted.
                     object.action(object.htmlElement || null)
                 }
             })
         }
+    },
+    onTouch: (event) => {
+        const { raycaster, mouse, scene, camera, videoElement } = getState()
+
+        mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
+        mouse.y = -(event.changedTouches[ 0 ].clientY / window.innerHeight) * 2 + 1
+
+        // update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, camera)
+        // calculate objects intersecting the picking ray
+        const intersects = raycaster.intersectObjects(scene.children, true)
+
+        intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
     }
 }

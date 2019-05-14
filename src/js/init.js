@@ -1,3 +1,4 @@
+import { getState, setState } from './store'
 import * as THREE from 'three'
 import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import OrbitControls from 'three-orbitcontrols'
@@ -15,46 +16,49 @@ export const init = {
         renderer.setSize(window.innerWidth, window.innerHeight)
         // add renderer to the DOM
         document.body.appendChild(renderer.domElement)
-        // return renderer
-        return renderer
+        // add to the global store
+        setState({ renderer })
     },
     scene: name => {
         // create a new empty scene object
         const scene = new THREE.Scene()
         // change the name of the scene so it's easily recognizable
         scene.name = name
-        // return scene
-        return scene
+        // add to the global store
+        setState({ scene })
     },
-    sceneGroup: (name, scene) => {
+    sceneGroup: name => {
+        const { scene } = getState()
         // create a new group
         const sceneGroup = new THREE.Group()
         // change the name of the scenegroup to make it easily recognizable
         sceneGroup.name = name
         // add to the scene
         scene.add(sceneGroup)
-        // return sceneGroup
-        return sceneGroup
+        // add to the global store
+        setState({ sceneGroup })
     },
-    camera: (name, scene) => {
+    camera: name => {
+        const { scene } = getState()
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
         // change the name of the camera so it's easily recognizable
         camera.name = name
         // add the camera to the scene
         scene.add(camera)
-        // return camera
-        return camera
+        // add to the global store
+        setState({ camera })
     },
     raycaster: () => {
         // create a new raycaster object
         const raycaster = new THREE.Raycaster()
         // create a new mouse object
         const mouse = new THREE.Vector2()
-        // add the raycaster and mouse to the global state
-        return { raycaster, mouse }
+        // add to the global store
+        setState({ raycaster, mouse })
     },
-    arToolkitSource: (sourceType, enable_ar, camera, renderer, onReady) => {
+    arToolkitSource: ({ sourceType, onReady }) => {
+        const { enable_ar, camera, renderer } = getState()
         // create the arToolkitSource (webcam, img)
         const _artoolkitsource = ArToolkitSource(THREE)
         const arToolkitSource = new _artoolkitsource({
@@ -65,10 +69,11 @@ export const init = {
         arToolkitSource.init(() => onReady(enable_ar, camera, renderer, arToolkitSource), error => {
             console.log('The following error occured while initializing arToolkitSource:', error)
         })
-        // return arToolkitSource
-        return arToolkitSource
+        // add to the global store
+        setState({ arToolkitSource })
     },
-    arToolkitContext: (camera, cameraParametersUrl, detectionMode) => {
+    arToolkitContext: ({ cameraParametersUrl, detectionMode }) => {
+        const { camera } = getState()
         // create new arToolkitContext object
         const arToolkitContext = new ArToolkitContext({
             cameraParametersUrl: cameraParametersUrl,
@@ -79,10 +84,11 @@ export const init = {
         arToolkitContext.init(() =>
             camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix())
         )
-        // return arToolkitContext
-        return arToolkitContext
+        // add to the global store
+        setState({ arToolkitContext })
     },
-    arMarkerRoot: (name, scene, sceneGroup) => {
+    arMarkerRoot: name => {
+        const { scene, sceneGroup } = getState()
         // create a markerRoot group
         const markerRoot = new THREE.Group()
         // change the name to make it recognizable
@@ -91,27 +97,26 @@ export const init = {
         markerRoot.add(sceneGroup)
         // add it to the scene
         scene.add(markerRoot)
-        // return markerRoot
-        return markerRoot
+        // add to the global store
+        setState({ markerRoot })
     },
-    arMarkerControls: (arToolkitContext, markerRoot, type, patternUrl) => {
-        // create and return ArMarkerControls
-        return new ArMarkerControls(arToolkitContext, markerRoot, {
+    arMarkerControls: ({ type, patternUrl }) => {
+        const { arToolkitContext, markerRoot } = getState()
+        // create ArMarkerControls
+        new ArMarkerControls(arToolkitContext, markerRoot, {
             type: type, patternUrl: patternUrl
         })
     },
-    orbitControls: (camera) => {
+    orbitControls: camera => {
         // rotate the camera y position so the scene is seen from the front
         camera.position.y = Math.PI / 1
         // create a new OrbitControl object with camera as input
         const controls = new OrbitControls(camera)
         // update the controls
         controls.update()
-        // return orbitControls
-        return controls
     },
-    cacheDOMElementsByID: (elementIDs) => {
-        return elementIDs.map((element) => {
+    cacheDOMElementsByID: elementIDs => {
+        const cacheDOM = elementIDs.map(element => {
             const html = document.getElementById(element)
             const tagName = html.tagName
 
@@ -121,5 +126,7 @@ export const init = {
                 tagName
             }
         })
+        // add to the global store
+        setState({ cacheDOM })
     }
 }

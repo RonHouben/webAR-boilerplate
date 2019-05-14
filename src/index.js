@@ -1,79 +1,78 @@
 // set the use strict for accidental creation of global variables
-// "use strict"
+"use strict"
 
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { getState, setState } from './js/store'
 import { init } from './js/init'
 import { events } from './js/events'
 import { video } from './js/video'
+import { modelLoader } from './js/3dModelLoader'
 
-// The following configures wether to use AR or not
+// the following configures wether to use AR or not
 setState({ enable_ar: false })
-
+// initialise everything
 initialise()
+// build the scene
+buildScene()
+// event handling
+eventHandling()
+// Run animate loop
 animate()
 
 function initialise() {
     // initialize the renderer
-    const renderer = init.renderer()
+    init.renderer()
     // initialize the scene
-    const scene = init.scene('scene')
+    init.scene('scene')
     // initialize sceneGroup
-    const sceneGroup = init.sceneGroup('sceneGroup', scene)
+    init.sceneGroup('sceneGroup')
     // initialize the camera
-    const camera = init.camera('camera', scene)
+    init.camera('camera')
     // initialize the raycaster
-    const raycaster = init.raycaster()
-
-    setState({ renderer, scene, sceneGroup, camera, raycaster })
+    init.raycaster()
     // check if AR is enabled
     const { enable_ar } = getState()
 
     if (enable_ar) {
         // initialize arToolkitSource
-        const arToolkitSource = init.arToolkitSource('webcam', enable_ar, camera, renderer, events.onResize)
+        init.arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
         // initialize arToolkitContext
-        const arToolkitContext = init.arToolkitContext(camera, 'src/assets/ar-markers/camera_para.dat', 'mono')
+        init.arToolkitContext({ cameraParametersUrl: 'src/assets/ar-markers/camera_para.dat', detectionMode: 'mono' })
         // initialize arMarkerRoots
-        const arMarkerRoot = init.arMarkerRoot('markerRoot', scene, sceneGroup)
+        init.arMarkerRoot('markerRoot')
         // initialize arMarkerControls
-        const arMarkerControls = init.arMarkerControls(arToolkitContext, arMarkerRoot, 'pattern', 'src/assets/ar-markers/hiro.patt')
-        setState({ arToolkitSource, arToolkitContext })
+        init.arMarkerControls({ type: 'pattern', patternUrl: 'src/assets/ar-markers/hiro.patt' })
 
     } else {
         // initialize OrbitControls
-        const orbitControls = init.orbitControls(camera)
+        const { camera } = getState()
+        init.orbitControls(camera)
     }
-    // initialize caching of DOM elements which need to be interacted with
-    const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
-    const videoElement = video.getVideoHTMLelementByID('video', cacheDOM)
-    setState({ cacheDOM })
+    // cache DOM elements which need to be interacted with by ID
+    init.cacheDOMElementsByID([ 'video' ])
+}
 
-    // add eventlistener for window resizing & click/touch events
-    const { arToolkitSource } = getState()
-    const objectsClickActions = [ { objectName: 'videoMesh', htmlElement: videoElement, action: video.playPauseVideo } ]
-    events.addEventListeners(enable_ar, camera, renderer, arToolkitSource, objectsClickActions, raycaster, scene)
+function buildScene() {
+    // START BUILDING THE SCENE
+    const { sceneGroup } = getState()
 
-    // Load a glTF resource
-    let loader = new GLTFLoader()
-
-    function loaderOnProgress(model) { console.info('gltf model ' + (model.loaded / model.total * 100) + '% loaded') }
-    function loaderOnError(error) { console.error('An error happened with loading the gltf model:\n', error) }
-
-    loader.load(
+    // Create new 3D model loader
+    const GLTFLoader = modelLoader.createNewLoader('GLTF')
+    // Load a GLTF resource and add it to the sceneGroup
+    GLTFLoader.load(
         'src/assets/3d-models/accenture-ar.gltf',
         function(group) {
-            let logo = group.scene
-            logo.scale.set(0.2, 0.2, 0.2)
-            logo.rotation.x = -Math.PI / 2
-            logo.position.z = - 0.8
-            logo.castShadow = true
-            logo.name = 'logo'
-            sceneGroup.add(logo)
+            const model = group.scene
+
+            model.scale.set(0.2, 0.2, 0.2)
+            model.rotation.x = -Math.PI / 2
+            model.position.z = - 0.8
+            model.castShadow = true
+            model.name = 'accenture-logo'
+            sceneGroup.add(model)
         },
-        loaderOnProgress,
-        loaderOnError
+        modelLoader.loaderOnProgress,
+        modelLoader.loaderOnError
     )
 
     // create lighting
@@ -82,42 +81,37 @@ function initialise() {
     light.castShadow = true
     sceneGroup.add(light)
 
-    const lightSphere = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1),
-        new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0
-        })
-    )
-    lightSphere.position.copy(light.position)
-    sceneGroup.add(lightSphere)
-
     const ambientLight = new THREE.AmbientLight(0x6F6666, 2)
     sceneGroup.add(ambientLight)
 
-
     // VIDEO
+    const videoElement = video.getVideoHTMLelementByID('video')
     const videoGroup = new THREE.Group()
-    videoGroup.name = 'video'
-    sceneGroup.add(videoGroup)
-
     const videoTexture = new THREE.VideoTexture(videoElement)
-    videoTexture.minFilter = THREE.LinearFilter
-    videoTexture.magFilter = THREE.LinearFilter
-    videoTexture.format = THREE.RGBFormat
-
-    // Make video mesh
     const videoMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.1, 0.1),
-        new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide })
+        new THREE.BoxGeometry(0.1, 0.1, 0.1),
+        new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide })
     )
-    videoMesh.rotation.x = -Math.PI / 2
+    videoGroup.name = 'video'
     videoMesh.name = 'videoMesh'
-
     videoGroup.add(videoMesh)
+    sceneGroup.add(videoGroup)
 }
 
+function eventHandling() {
+    // EVENT HANDLING CONFIG
+    const videoElement = video.getVideoHTMLelementByID('video')
+    // create an array of objects with their corresponding actions to add to the eventListeners
+    const objectsClickActions = [
+        {
+            objectName: 'videoMesh',
+            htmlElement: videoElement,
+            action: video.playPauseVideo
+        }
+    ]
+    // add eventlistener for window resizing & click/touch events
+    events.addEventListeners(objectsClickActions)
+}
 // update logic
 function update() {
     const { enable_ar, arToolkitSource, arToolkitContext } = getState()
@@ -152,24 +146,4 @@ function animate() {
     requestAnimationFrame(animate)
     update()
     render()
-}
-
-function onTouch(event) {
-    const { raycaster, scene, camera } = getState()
-
-    raycaster.mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
-    raycaster.mouse.y = -(event.changedTouches[ 0 ].clientY / window.innerHeight) * 2 + 1
-
-    // update the picking ray with the camera and mouse position
-    raycaster.raycaster.setFromCamera(raycaster.mouse, camera)
-    // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(scene.children, true)
-    intersects.forEach(intersect => intersect.object.name == 'videoMesh' ? playPauseVideo(videoElement) : null)
-}
-
-function playPauseVideo(video) {
-    if (video.paused)
-        video.play()
-    else
-        video.pause()
 }
