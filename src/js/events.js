@@ -1,5 +1,4 @@
 import { getState, setState } from './store'
-import { video } from './video';
 
 export const events = {
     addEventListeners: objectsClickActions => {

@@ -4,7 +4,7 @@
   "description": "AR Project for Accenture to tell the Accenture Techvision story.",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --content-base src --hot --inline --open",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production"
