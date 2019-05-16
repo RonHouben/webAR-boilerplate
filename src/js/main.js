@@ -125,7 +125,7 @@ async function animateScene() {
         video.scale.set(x, y, z)
     }
 
-    requestAnimationFrame(animate)
+    requestAnimationFrame(animateScene)
 
     enable_ar ? updateArToolkit() : null
 
