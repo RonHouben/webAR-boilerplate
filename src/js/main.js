@@ -51,7 +51,7 @@ function initializeScene() {
 
         setState({ arToolkitSource, arToolitContext, arMarkerRoot, arMarkerControls })
     } else {
-        const orbitControls = init().orbitControls()
+        const orbitControls = init().orbitControls(camera)
 
         initializeScene.orbitControls = orbitControls
 
