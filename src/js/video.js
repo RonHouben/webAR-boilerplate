@@ -12,6 +12,6 @@ export const video = {
             return result
         }, {})
     },
-    playPauseVideo: video => video.paused ? video.play() : video.pause()
+    playPause: video => video.paused ? video.play() : video.pause()
 
 }

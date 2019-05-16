@@ -5,19 +5,29 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 
 const validLoaders = [ 'GLTF', 'MTLL', 'OBJ', 'STL' ]
 
-export const loader = {
+export const loadingManager = {
+    loadObject: async ({ url, loaderType }) => {
+        // Create new object loader
+        const loader = loadingManager.createNewLoader(loaderType)
+        // load the object
+        const object = await loader
+            .load(url)
+            .catch(loader.loaderOnError)
+        // return the object
+        return object
+    },
     createNewLoader: loaderName => {
         switch (typeof loaderName === 'string' ? loaderName.toLowerCase() : typeof loaderName) {
             case 'gltf':
-                return loader.promisifyLoader(new GLTFLoader())
+                return loadingManager.promisifyLoader(new GLTFLoader())
             case 'mtl':
-                return loader.promisifyLoader(new MTLLoader())
+                return loadingManager.promisifyLoader(new MTLLoader())
             case 'obj':
-                return loader.promisifyLoader(new OBJLoader())
+                return loadingManager.promisifyLoader(new OBJLoader())
             case 'stl':
-                return loader.promisifyLoader(new STLLoader())
+                return loadingManager.promisifyLoader(new STLLoader())
             case 'object':
-                return loader.promisifyLoader(new loaderName)
+                return loadingManager.promisifyLoader(new loaderName)
             default:
                 return console.error(`You've choosen an invalid loader!\n Please choose one of the following loaders:\n${ validLoaders.toString() }`)
         }
@@ -30,6 +40,6 @@ export const loader = {
             load: promiseLoader,
         }
     },
-    loaderOnProgress: model => console.info('3D model ' + (model.loaded / model.total * 100) + '% loaded'),
-    loaderOnError: error => console.error('An error happened with loading the 3D model:\n', error)
+    loaderOnProgress: model => console.info(`3D model ${ model.loaded / model.total * 100 }% loaded`),
+    loaderOnError: error => console.error('An error happened with loading the object:\n', error)
 }
