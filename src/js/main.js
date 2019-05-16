@@ -106,7 +106,9 @@ function addEventHandling() {
         }
     ]
     // add eventlistener for window resizing & click/touch events
-    events.addEventListeners(objectsClickActions)
+    const bla = new events(objectsClickActions)
+
+    bla.addEventListeners()
 }
 
 // run game loop (update, render, repeat)
