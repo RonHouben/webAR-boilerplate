@@ -2,6 +2,7 @@ import { getState, setState } from './store'
 import * as THREE from 'three'
 import { ArToolkitSource, ArToolkitContext, ArMarkerControls } from 'node-ar.js'
 import OrbitControls from 'three-orbitcontrols'
+import { typeChecker } from './typeChecker'
 
 export const init = {
     renderer: () => {
@@ -20,6 +21,7 @@ export const init = {
         setState({ renderer })
     },
     scene: name => {
+        name = typeChecker('string', '', 'name')(name)
         // create a new empty scene object
         const scene = new THREE.Scene()
         // change the name of the scene so it's easily recognizable
@@ -28,6 +30,8 @@ export const init = {
         setState({ scene })
     },
     sceneGroup: name => {
+        name = typeChecker('string', '', 'name')(name)
+
         const { scene } = getState()
         // create a new group
         const sceneGroup = new THREE.Group()
@@ -39,6 +43,8 @@ export const init = {
         setState({ sceneGroup })
     },
     camera: name => {
+        name = typeChecker('string', '', 'name')(name)
+
         const { scene } = getState()
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
@@ -58,12 +64,14 @@ export const init = {
         setState({ raycaster, mouse })
     },
     arToolkitSource: ({ sourceType, onReady }) => {
+        sourceType = typeChecker('string', '', 'sourceType')(sourceType)
+        onReady = typeChecker('function', () => null, 'onReady')(onReady)
+
         const { enable_ar, camera, renderer } = getState()
+
         // create the arToolkitSource (webcam, img)
         const _artoolkitsource = ArToolkitSource(THREE)
-        const arToolkitSource = new _artoolkitsource({
-            sourceType: sourceType,
-        })
+        const arToolkitSource = new _artoolkitsource({ sourceType })
 
         // initiate the arToolkitSource
         arToolkitSource.init(() => onReady(enable_ar, camera, renderer, arToolkitSource), error => {
@@ -72,7 +80,10 @@ export const init = {
         // add to the global store
         setState({ arToolkitSource })
     },
-    arToolkitContext: ({ cameraParametersUrl, detectionMode }) => {
+    arToolkitContext({ cameraParametersUrl, detectionMode }) {
+        cameraParametersUrl = typeChecker('string', '', 'cameraParametersUrl')(cameraParametersUrl)
+        detectionMode = typeChecker('string', '', 'detectionMode')(detectionMode)
+
         const { camera } = getState()
         // create new arToolkitContext object
         const arToolkitContext = new ArToolkitContext({
@@ -88,6 +99,8 @@ export const init = {
         setState({ arToolkitContext })
     },
     arMarkerRoot: name => {
+        name = typeChecker('string', '', 'name')(name)
+
         const { scene, sceneGroup } = getState()
         // create a markerRoot group
         const markerRoot = new THREE.Group()
@@ -101,13 +114,17 @@ export const init = {
         setState({ markerRoot })
     },
     arMarkerControls: ({ type, patternUrl }) => {
+        type = typeChecker('string', '', 'type')(type)
+        patternUrl = typeChecker('string', '', 'patternUrl')(patternUrl)
+
         const { arToolkitContext, markerRoot } = getState()
         // create ArMarkerControls
         new ArMarkerControls(arToolkitContext, markerRoot, {
             type: type, patternUrl: patternUrl
         })
     },
-    orbitControls: camera => {
+    orbitControls: () => {
+        const { camera } = getState()
         // rotate the camera y position so the scene is seen from the front
         camera.position.y = Math.PI / 1
         // create a new OrbitControl object with camera as input
@@ -116,6 +133,8 @@ export const init = {
         controls.update()
     },
     cacheDOMElementsByID: elementIDs => {
+        elementIDs = typeChecker('array', [], 'elementIDs')(elementIDs)
+
         const cacheDOM = elementIDs.map(element => {
             const html = document.getElementById(element)
             const tagName = html.tagName
