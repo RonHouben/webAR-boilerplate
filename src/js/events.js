@@ -1,4 +1,6 @@
 import { getState, setState } from './store'
+import { typeChecker } from './typeChecker';
+import { type } from 'os';
 
 export class events {
     constructor(objectsClickActions) {
@@ -32,6 +34,8 @@ export class events {
 
 export const bla = {
     addEventListeners: objectsClickActions => {
+        objectsClickActions = typeChecker('array', [], 'objectsClickActions')(objectsClickActions)
+
         window.addEventListener('resize', events.onResize)
         window.addEventListener('click', event => events.onClick({ event, objectsClickActions }), false)
         window.addEventListener('touchend', event => events.onTouchend({ event, objectsClickActions }), false)
@@ -55,6 +59,9 @@ export const bla = {
         }
     },
     onClick: ({ event, objectsClickActions }) => {
+        event = typeChecker('object', {}, 'event')(event)
+        objectsClickActions = typeChecker('object', {}, 'objectsClickActions')(objectsClickActions)
+
         const { mouse } = getState()
         // calculate mouse position in normalized device coordinates
         // (-1 to +1) for both components
@@ -66,6 +73,9 @@ export const bla = {
         events.executeObjectAction(objectsClickActions)
     },
     onTouchend: ({ event, objectsClickActions }) => {
+        event = typeChecker('object', {}, 'event')(event)
+        objectsClickActions = typeChecker('object', {}, 'objectsClickActions')(objectsClickActions)
+
         const { mouse } = getState()
 
         mouse.x = (event.changedTouches[ 0 ].clientX / window.innerWidth) * 2 - 1
@@ -76,6 +86,8 @@ export const bla = {
         events.executeObjectAction(objectsClickActions)
     },
     executeObjectAction: objectsClickActions => {
+        objectsClickActions = typeChecker('object', {}, 'objectsClickActions')(objectsClickActions)
+
         const { raycaster, mouse, scene, camera } = getState()
         // update the picking ray with the camera and mouse position
         raycaster.setFromCamera(mouse, camera)
