@@ -6,54 +6,80 @@ import { init } from './init'
 import { events } from './events'
 import { video } from './video'
 import { loadingManager } from './loadingManager'
+import { typeChecker } from './typeChecker';
 
 // the following configures wether to use AR or not
-setState({ enable_ar: false })
-
+const ENABLE_AR = false
+// execute the main function
 main()
 
 async function main() {
     // initialise everything
-    initialise()
+    const initializedScene = initializeScene()
     // build the scene - The await is necessary because of the async actions.
     // Otherwise animate will happen before all the objects are build.
     await buildScene()
     // add event handling
     addEventHandling()
     // Run animate loop
-    animateScene()
+    animateScene(initializedScene)
 }
 
-function initialise() {
-    // initialize the renderer
-    init.renderer()
-    // initialize the scene
-    init.scene('scene')
-    // initialize sceneGroup
-    init.sceneGroup('sceneGroup')
-    // initialize the camera
-    init.camera('camera')
-    // initialize the raycaster
-    init.raycaster()
-    // check if AR is enabled
-    const { enable_ar } = getState()
+function initializeScene() {
+    const renderer = init().renderer()
+    const scene = init().scene('scene')
+    const sceneGroup = init().sceneGroup({ name: 'sceneGroup', scene })
+    const camera = init().camera({ name: 'camera', scene })
+    const { raycaster, mouse } = init().raycaster()
 
-    if (enable_ar) {
-        // initialize arToolkitSource
-        init.arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
-        // initialize arToolkitContext
-        init.arToolkitContext({ cameraParametersUrl: '../assets/ar-markers/camera_para.dat', detectionMode: 'mono' })
-        // initialize arMarkerRoots
-        init.arMarkerRoot('markerRoot')
-        // initialize arMarkerControls
-        init.arMarkerControls({ type: 'pattern', patternUrl: '../assets/ar-markers/hiro.patt' })
+    if (ENABLE_AR) {
+        const arToolkitSource = init().arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
+        const arToolitContext = init().arToolkitContext({
+            cameraParametersUrl: '../assets/ar-markers/camera_para.dat',
+            detectionMode: 'mono'
+        })
+        const arMarkerRoot = init().arMarkerRoot('markerRoot')
+        const arMarkerControls = init().arMarkerControls({
+            type: 'pattern',
+            patternUrl: '../assets/ar-markers/hiro.patt'
+        })
 
+        initializeScene.arToolkitSource = arToolkitSource
+        initializeScene.arToolitContext = arToolitContext
+        initializeScene.arMarkerRoot = arMarkerRoot
+        initializeScene.arMarkerControls = arMarkerControls
+
+        setState({ arToolkitSource, arToolitContext, arMarkerRoot, arMarkerControls })
     } else {
-        // initialize OrbitControls
-        init.orbitControls()
+        const orbitControls = init().orbitControls()
+
+        initializeScene.orbitControls = orbitControls
+
+        setState({ orbitControls })
     }
-    // cache DOM elements which need to be interacted with by ID
-    init.cacheDOMElementsByID([ 'video' ])
+    const cacheDOM = init().cacheDOMElementsByID([ 'video' ])
+
+    const initializedScene = {
+        renderer,
+        scene,
+        sceneGroup,
+        camera,
+        raycaster,
+        mouse,
+        cacheDOM
+    }
+
+    setState({
+        renderer,
+        scene,
+        sceneGroup,
+        camera,
+        raycaster,
+        mouse,
+        cacheDOM
+    })
+
+    return initializedScene
 }
 
 async function buildScene() {
@@ -95,7 +121,7 @@ async function buildScene() {
 
 function addEventHandling() {
     // EVENT HANDLING CONFIG
-    const { enable_ar, camera, renderer, arToolkitSource, raycaster, mouse, scene } = getState()
+    const { camera, renderer, arToolkitSource, raycaster, mouse, scene } = getState()
     const videoElement = video.getVideoHTMLelementByID('video')
     // create an array of objects with their corresponding actions to add to the eventListeners
     const objectsClickActions = [
@@ -108,7 +134,7 @@ function addEventHandling() {
     // add eventlistener for window resizing & click/touch events
     events({
         objectsClickActions,
-        enable_ar,
+        enable_ar: ENABLE_AR,
         camera,
         renderer,
         arToolkitSource,
@@ -116,13 +142,13 @@ function addEventHandling() {
         mouse,
         scene
     }).addEventListeners()
-
 }
 
 // run game loop (update, render, repeat)
-async function animateScene() {
-    const { scene, enable_ar } = getState()
+async function animateScene(initializedScene) {
+    initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
 
+    const { scene } = getState()
     const video = await scene.getObjectByName('video')
 
     let x = video.scale.x
@@ -135,11 +161,11 @@ async function animateScene() {
         video.scale.set(x, y, z)
     }
 
-    requestAnimationFrame(animateScene)
+    requestAnimationFrame(() => animateScene(initializedScene))
 
-    enable_ar ? updateArToolkit() : null
+    ENABLE_AR ? updateArToolkit() : null
 
-    render()
+    render(initializedScene)
 }
 
 // update logic
@@ -152,7 +178,12 @@ function updateArToolkit() {
 }
 
 // draw scene
-function render() {
-    const { renderer, scene, camera } = getState()
+function render(initializedScene) {
+    let { renderer } = initializedScene
+    //type checking
+    initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
+    renderer = typeChecker('object', {}, 'renderer')(renderer)
+
+    const { scene, camera } = getState()
     renderer.render(scene, camera)
 }
