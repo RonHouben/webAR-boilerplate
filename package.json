@@ -4,7 +4,7 @@
   "description": "AR Project for Accenture to tell the Accenture Techvision story.",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --content-base src --hot --inline --open",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production"
@@ -28,7 +28,6 @@
   },
   "homepage": "https://github.com/RonHouben/accenture-ar#readme",
   "dependencies": {
-    "jsartoolkit5": "0.0.4",
     "node-ar.js": "0.0.5",
     "three": "^0.104.0",
     "three-orbitcontrols": "^2.102.1"
