@@ -95,6 +95,7 @@ async function buildScene() {
 
 function addEventHandling() {
     // EVENT HANDLING CONFIG
+    const { enable_ar, camera, renderer, arToolkitSource, raycaster, mouse, scene } = getState()
     const videoElement = video.getVideoHTMLelementByID('video')
     // create an array of objects with their corresponding actions to add to the eventListeners
     const objectsClickActions = [
@@ -105,9 +106,17 @@ function addEventHandling() {
         }
     ]
     // add eventlistener for window resizing & click/touch events
-    const bla = new events(objectsClickActions)
+    events({
+        objectsClickActions,
+        enable_ar,
+        camera,
+        renderer,
+        arToolkitSource,
+        raycaster,
+        mouse,
+        scene
+    }).addEventListeners()
 
-    bla.addEventListeners()
 }
 
 // run game loop (update, render, repeat)
