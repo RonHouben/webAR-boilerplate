@@ -50,8 +50,7 @@ function initialise() {
 
     } else {
         // initialize OrbitControls
-        const { camera } = getState()
-        init.orbitControls(camera)
+        init.orbitControls()
     }
     // cache DOM elements which need to be interacted with by ID
     init.cacheDOMElementsByID([ 'video' ])
