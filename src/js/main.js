@@ -18,7 +18,7 @@ async function main() {
     const initializedScene = initializeScene()
     // build the scene - The await is necessary because of the async actions.
     // Otherwise animate will happen before all the objects are build.
-    await buildScene()
+    await buildScene(initializedScene.sceneGroup)
     // add event handling
     addEventHandling()
     // Run animate loop
@@ -32,6 +32,16 @@ function initializeScene() {
     const camera = init().camera({ name: 'camera', scene })
     const { raycaster, mouse } = init().raycaster()
 
+    const initializedScene = {
+        renderer,
+        scene,
+        sceneGroup,
+        camera,
+        raycaster,
+        mouse,
+        cacheDOM
+    }
+
     if (ENABLE_AR) {
         const arToolkitSource = init().arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
         const arToolitContext = init().arToolkitContext({
@@ -44,30 +54,23 @@ function initializeScene() {
             patternUrl: '../assets/ar-markers/hiro.patt'
         })
 
-        initializeScene.arToolkitSource = arToolkitSource
-        initializeScene.arToolitContext = arToolitContext
-        initializeScene.arMarkerRoot = arMarkerRoot
-        initializeScene.arMarkerControls = arMarkerControls
+        initializeScene = {
+            ...initializeScene,
+            arToolkitSource,
+            arToolitContext,
+            arMarkerRoot,
+            arMarkerControls
+        }
 
         setState({ arToolkitSource, arToolitContext, arMarkerRoot, arMarkerControls })
     } else {
         const orbitControls = init().orbitControls(camera)
 
-        initializeScene.orbitControls = orbitControls
+        initializeScene = { ...initializeScene, orbitControls }
 
         setState({ orbitControls })
     }
     const cacheDOM = init().cacheDOMElementsByID([ 'video' ])
-
-    const initializedScene = {
-        renderer,
-        scene,
-        sceneGroup,
-        camera,
-        raycaster,
-        mouse,
-        cacheDOM
-    }
 
     setState({
         renderer,
@@ -82,8 +85,8 @@ function initializeScene() {
     return initializedScene
 }
 
-async function buildScene() {
-    const { sceneGroup } = getState()
+async function buildScene(sceneGroup) {
+    sceneGroup = typeChecker('object', {}, 'sceneGroups')(sceneGroup)
     // load accenture logo
     const accentureLogo = await loadingManager.loadObject({ url: '../assets/3d-models/accenture-ar.gltf', loaderType: 'GLTF' })
     // configure accentureLogo
