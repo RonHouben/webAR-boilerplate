@@ -1,7 +1,6 @@
 // set the use strict for accidental creation of global variables
 "use strict"
 
-import { getState, setState } from './store'
 import { init } from './init'
 import { events } from './events'
 import { video } from './video'
@@ -18,38 +17,30 @@ async function main() {
     const initializedScene = initializeScene()
     // build the scene - The await is necessary because of the async actions.
     // Otherwise animate will happen before all the objects are build.
-    await buildScene(initializedScene.sceneGroup)
+    const buildedScene = await buildScene(initializedScene)
+
+    const { camera, renderer, arToolkitSource, raycaster, mouse, scene, cacheDOM } = buildedScene
     // add event handling
-    addEventHandling()
+    addEventHandling({ camera, renderer, arToolkitSource, raycaster, mouse, scene, cacheDOM })
     // Run animate loop
-    animateScene(initializedScene)
+    animateScene(buildedScene)
 }
 
 function initializeScene() {
-    const renderer = init().renderer()
-    const scene = init().scene('scene')
-    const sceneGroup = init().sceneGroup({ name: 'sceneGroup', scene })
-    const camera = init().camera({ name: 'camera', scene })
-    const { raycaster, mouse } = init().raycaster()
-
-    const initializedScene = {
-        renderer,
-        scene,
-        sceneGroup,
-        camera,
-        raycaster,
-        mouse,
-        cacheDOM
-    }
+    const renderer = init.renderer()
+    const scene = init.scene('scene')
+    const sceneGroup = init.sceneGroup({ name: 'sceneGroup', scene })
+    const camera = init.camera({ name: 'camera', scene })
+    const { raycaster, mouse } = init.raycaster()
 
     if (ENABLE_AR) {
-        const arToolkitSource = init().arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
-        const arToolitContext = init().arToolkitContext({
+        const arToolkitSource = init.arToolkitSource({ sourceType: 'webcam', onReady: events.onResize })
+        const arToolitContext = init.arToolkitContext({
             cameraParametersUrl: '../assets/ar-markers/camera_para.dat',
             detectionMode: 'mono'
         })
-        const arMarkerRoot = init().arMarkerRoot('markerRoot')
-        const arMarkerControls = init().arMarkerControls({
+        const arMarkerRoot = init.arMarkerRoot('markerRoot')
+        const arMarkerControls = init.arMarkerControls({
             type: 'pattern',
             patternUrl: '../assets/ar-markers/hiro.patt'
         })
@@ -61,32 +52,30 @@ function initializeScene() {
             arMarkerRoot,
             arMarkerControls
         }
-
-        setState({ arToolkitSource, arToolitContext, arMarkerRoot, arMarkerControls })
     } else {
-        const orbitControls = init().orbitControls(camera)
-
+        const orbitControls = init.orbitControls(camera)
         initializeScene = { ...initializeScene, orbitControls }
-
-        setState({ orbitControls })
     }
-    const cacheDOM = init().cacheDOMElementsByID([ 'video' ])
+    const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
 
-    setState({
+    const initializedScene = {
         renderer,
         scene,
         sceneGroup,
         camera,
         raycaster,
         mouse,
-        cacheDOM
-    })
+        cacheDOM,
+    }
 
     return initializedScene
 }
 
-async function buildScene(sceneGroup) {
-    sceneGroup = typeChecker('object', {}, 'sceneGroups')(sceneGroup)
+async function buildScene(initializedScene) {
+    initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
+    const buildedScene = { ...initializedScene }
+    const { sceneGroup, cacheDOM } = buildedScene
+
     // load accenture logo
     const accentureLogo = await loadingManager.loadObject({ url: '../assets/3d-models/accenture-ar.gltf', loaderType: 'GLTF' })
     // configure accentureLogo
@@ -109,7 +98,7 @@ async function buildScene(sceneGroup) {
     sceneGroup.add(pointLight)
 
     // create Video object
-    const videoElement = video.getVideoHTMLelementByID('video')
+    const videoElement = video.getVideoHTMLelementByID({ id: 'video', cacheDOM })
     const videoTexture = new THREE.VideoTexture(videoElement)
     const videoMesh =
         new THREE.Mesh(
@@ -120,12 +109,17 @@ async function buildScene(sceneGroup) {
     videoMesh.name = 'video'
     // add video to the sceneGroup
     sceneGroup.add(videoMesh)
+    // return updated scene
+    return buildedScene
 }
 
-function addEventHandling() {
+function addEventHandling({ camera, renderer, arToolkitSource, raycaster, mouse, scene, cacheDOM }) {
+    camera = typeChecker('object', {}, 'camera')(camera)
+    renderer = typeChecker('object', {}, 'renderer')(renderer)
+    cacheDOM = typeChecker('array', [], 'cacheDOM')(cacheDOM)
+
     // EVENT HANDLING CONFIG
-    const { camera, renderer, arToolkitSource, raycaster, mouse, scene } = getState()
-    const videoElement = video.getVideoHTMLelementByID('video')
+    const videoElement = video.getVideoHTMLelementByID({ id: 'video', cacheDOM })
     // create an array of objects with their corresponding actions to add to the eventListeners
     const objectsClickActions = [
         {
@@ -148,10 +142,9 @@ function addEventHandling() {
 }
 
 // run game loop (update, render, repeat)
-async function animateScene(initializedScene) {
-    initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
-
-    const { scene } = getState()
+async function animateScene(buildedScene) {
+    buildedScene = typeChecker('object', {}, 'buildedScene')(buildedScene)
+    const { scene, arToolkitSource, arToolkitContext } = buildedScene
     const video = await scene.getObjectByName('video')
 
     let x = video.scale.x
@@ -164,29 +157,30 @@ async function animateScene(initializedScene) {
         video.scale.set(x, y, z)
     }
 
-    requestAnimationFrame(() => animateScene(initializedScene))
+    requestAnimationFrame(() => animateScene(buildedScene))
 
-    ENABLE_AR ? updateArToolkit() : null
+    ENABLE_AR ? updateArToolkit({ arToolkitSource, arToolkitContext }) : null
 
-    render(initializedScene)
+    render(buildedScene)
 }
 
 // update logic
-function updateArToolkit() {
-    const { arToolkitSource, arToolkitContext } = getState()
+function updateArToolkit({ arToolkitSource, arToolkitContext }) {
+    arToolkitSource = typeChecker('object', {}, 'arToolkitSource')(arToolkitSource)
+    arToolkitContext = typeChecker('object', {}, 'arToolkitContext')(arToolkitContext)
 
     if (arToolkitSource.ready)
         arToolkitContext.update(arToolkitSource.domElement)
-
 }
 
 // draw scene
-function render(initializedScene) {
-    let { renderer } = initializedScene
+function render(buildedScene) {
+    buildedScene = typeChecker('object', {}, 'buildedScene')(buildedScene)
+    let { renderer, scene, camera } = buildedScene
     //type checking
-    initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
+    scene = typeChecker('object', {}, 'scene')(scene)
     renderer = typeChecker('object', {}, 'renderer')(renderer)
+    camera = typeChecker('object', {}, 'camera')(camera)
 
-    const { scene, camera } = getState()
     renderer.render(scene, camera)
 }
