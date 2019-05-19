@@ -58,7 +58,8 @@ function initializeScene() {
     }
     const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
 
-    const initializedScene = {
+    // using Object.freeze() to enforce immutable data.
+    const initializedScene = Object.freeze({
         renderer,
         scene,
         sceneGroup,
@@ -66,7 +67,7 @@ function initializeScene() {
         raycaster,
         mouse,
         cacheDOM,
-    }
+    })
 
     return initializedScene
 }
