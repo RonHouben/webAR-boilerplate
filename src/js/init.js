@@ -16,7 +16,7 @@ export const init = {
         renderer.setSize(window.innerWidth, window.innerHeight)
         // add renderer to the DOM
         document.body.appendChild(renderer.domElement)
-        // return renderer
+        // return renderer - using Object.freeze() for immutibility
         return renderer
     },
     scene: name => {
@@ -42,6 +42,7 @@ export const init = {
     },
     camera: ({ name, scene }) => {
         name = typeChecker('string', '', 'name')(name)
+        scene = typeChecker('object', {}, 'scene')(scene)
         // create a new camera object
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000)
         // change the name of the camera so it's easily recognizable
