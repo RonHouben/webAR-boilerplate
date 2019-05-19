@@ -77,7 +77,8 @@ async function buildScene(initializedScene) {
     const { sceneGroup, cacheDOM } = buildedScene
 
     // load accenture logo
-    const accentureLogo = await loadingManager.loadObject({ url: '../assets/3d-models/accenture-ar.gltf', loaderType: 'GLTF' })
+    const accentureLogo = await loadingManager().loadObject({ url: '../assets/3d-models/accenture-ar.gltf', loaderType: 'GLTF' })
+
     // configure accentureLogo
     accentureLogo.scene.name = 'accenture-log'
     accentureLogo.scene.scale.set(0.2, 0.2, 0.2)
