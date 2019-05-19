@@ -58,7 +58,8 @@ function initializeScene() {
     }
     const cacheDOM = init.cacheDOMElementsByID([ 'video' ])
 
-    const initializedScene = {
+    // using Object.freeze() to enforce immutable data.
+    const initializedScene = Object.freeze({
         renderer,
         scene,
         sceneGroup,
@@ -66,14 +67,14 @@ function initializeScene() {
         raycaster,
         mouse,
         cacheDOM,
-    }
+    })
 
     return initializedScene
 }
 
 async function buildScene(initializedScene) {
     initializedScene = typeChecker('object', {}, 'initializedScene')(initializedScene)
-    const buildedScene = { ...initializedScene }
+    const buildedScene = Object.freeze({ ...initializedScene })
     const { sceneGroup, cacheDOM } = buildedScene
 
     // load accenture logo
@@ -144,9 +145,13 @@ function addEventHandling({ camera, renderer, arToolkitSource, raycaster, mouse,
 
 // run game loop (update, render, repeat)
 async function animateScene(buildedScene) {
+    // typeChecking
     buildedScene = typeChecker('object', {}, 'buildedScene')(buildedScene)
-    const { scene, arToolkitSource, arToolkitContext } = buildedScene
-    const video = await scene.getObjectByName('video')
+    // create a new animatedScene for immutibilty
+    const animatedScene = Object.freeze({ ...buildedScene })
+
+    // get video element
+    const video = await animatedScene.scene.getObjectByName('video')
 
     let x = video.scale.x
     let y = video.scale.y
@@ -158,11 +163,19 @@ async function animateScene(buildedScene) {
         video.scale.set(x, y, z)
     }
 
-    requestAnimationFrame(() => animateScene(buildedScene))
+    // request the browser to animate the scene
+    requestAnimationFrame(() => animateScene(animatedScene))
 
-    ENABLE_AR ? updateArToolkit({ arToolkitSource, arToolkitContext }) : null
+    // updateArToolkit if AR is enabled
+    if (ENABLE_AR) {
+        let { arToolkitSource, arToolkitContext } = animatedScene
+        arToolkitSource = typeChecker('object', {}, 'arToolkitSource')(arToolkitSource)
+        arToolkitContext = typeChecker('object', {}, 'arToolkitContext')(arToolkitContext)
 
-    render(buildedScene)
+        updateArToolkit({ arToolkitSource, arToolkitContext })
+    }
+    // render the scene
+    render(animatedScene)
 }
 
 // update logic
@@ -175,9 +188,9 @@ function updateArToolkit({ arToolkitSource, arToolkitContext }) {
 }
 
 // draw scene
-function render(buildedScene) {
-    buildedScene = typeChecker('object', {}, 'buildedScene')(buildedScene)
-    let { renderer, scene, camera } = buildedScene
+function render(animatedScene) {
+    animatedScene = Object.freeze(typeChecker('object', {}, 'buildedScene')(animatedScene))
+    let { renderer, scene, camera } = animatedScene
     //type checking
     scene = typeChecker('object', {}, 'scene')(scene)
     renderer = typeChecker('object', {}, 'renderer')(renderer)
