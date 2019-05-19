@@ -62,5 +62,5 @@ export function loadingManager() {
         console.error('An error happened with loading the object:\n', error)
     }
 
-    return { loadObject: loadObject() }
+    return { loadObject }
 }
